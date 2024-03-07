@@ -13,10 +13,7 @@ export class HeroDetailComponent implements OnInit {
   ngOnInit(): void {
   }
 
-<<<<<<< HEAD
 
   @Input() hero?: Hero;
 
-=======
->>>>>>> refs/remotes/origin/master
 }

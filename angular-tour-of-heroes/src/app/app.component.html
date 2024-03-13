@@ -1,7 +1,9 @@
-<h1>{{title}}</h1>
+<h1 *ngIf="!isFormDemo">{{title}}</h1>
 <nav>
-  <a routerLink="/dashboard">Dashboard</a>
-  <a routerLink="/heroes">Heroes</a>
+  <a routerLink="/dashboard" (click)="isFormDemoClick(false)">Dashboard</a>
+  <a routerLink="/heroes" (click)="isFormDemoClick(false)">Heroes</a>
+  <a routerLink="/formDemo" (click)="isFormDemoClick(true)">FormDemo</a>
 </nav>
 <router-outlet></router-outlet>
-<app-messages></app-messages>
+<app-messages *ngIf="!isFormDemo"></app-messages>
+<!-- <app-heroform></app-heroform> -->

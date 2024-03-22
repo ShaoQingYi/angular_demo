@@ -18,6 +18,9 @@ export class MoneyDetailService {
     @Inject(LOCALE_ID) public locale: string,
   ) { }
 
+  // TODO SpringBoot
+  private serviceUrl = 'http://127.0.0.1:8080';
+
   getToday(): string {
     return formatDate(new Date(), 'yyyy-MM-dd',this.locale);
   }

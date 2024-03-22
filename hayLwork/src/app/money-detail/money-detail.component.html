@@ -1,15 +1,19 @@
 <div [hidden]="submitted">
     <h1>XXXX Form</h1>
     <form (ngSubmit)="onSubmit()" #moneyDetailForm="ngForm">
+    
         <label for="Out">Out</label>
         <input id="Out" type="radio"
-           [(ngModel)]="selectedOptionInorOut" value="Out" name="inOrOut"
-           (ngModelChange)="toggleElements()">
+        [(ngModel)]="selectedOptionInorOut" value="Out" name="inOrOut"
+        (ngModelChange)="toggleElements()">
+
+        &nbsp;
 
         <label for="in">In</label>
         <input id="in" type="radio"
             [(ngModel)]="selectedOptionInorOut" value="In" name="inOrOut"
             (ngModelChange)="toggleElements()">
+
         <br>
 
         <label for="writeTime">writeTime</label>
@@ -116,18 +120,69 @@
 
 <div [hidden]="!submitted">
     <h2>You submitted the following:</h2>
-    <div class="row">
-      <div class="col-xs-3">Name</div>
-      <div class="col-xs-9">{{ moneyDetail.costName }}</div>
+
+    <div *ngIf="isOut">
+        <div class="row">
+            <div class="col-xs-3">inOrOut</div>
+            <div class="col-xs-9">{{ selectedOptionInorOut }}</div>
+        </div>
+        <div class="row">
+            <div class="col-xs-3">writeTime</div>
+            <div class="col-xs-9">{{ moneyDetail.writeTime }}</div>
+        </div>
+        <div class="row">
+            <div class="col-xs-3">costName</div>
+            <div class="col-xs-9">{{ moneyDetail.costName }}</div>
+        </div>
+        <div class="row">
+            <div class="col-xs-3">costMoney</div>
+            <div class="col-xs-9">{{ moneyDetail.costMoney }}</div>
+        </div>
+        <div class="row">
+            <div class="col-xs-3">costType</div>
+            <div class="col-xs-9">{{ costTypeForView }}</div>
+        </div>
+        <div class="row">
+            <div class="col-xs-3">payMethod</div>
+            <div class="col-xs-9">{{ payMethodForView }}</div>
+        </div>
+        <div class="row">
+            <div class="col-xs-3">isDifferenceObject</div>
+            <div class="col-xs-9">{{ moneyDetail.isDifferenceObject }}</div>
+        </div>
+        <div class="row">
+            <div class="col-xs-3">memo</div>
+            <div class="col-xs-9">{{ moneyDetail.memo }}</div>
+        </div>
     </div>
-    <div class="row">
-      <div class="col-xs-3">Alter Ego</div>
-      <div class="col-xs-9">{{ moneyDetail.costName }}</div>
+
+    <div *ngIf="!isOut">
+        <div class="row">
+            <div class="col-xs-3">inOrOut</div>
+            <div class="col-xs-9">{{ selectedOptionInorOut }}</div>
+        </div>
+        <div class="row">
+            <div class="col-xs-3">writeTime</div>
+            <div class="col-xs-9">{{ moneyDetail.writeTime }}</div>
+        </div>
+        <div class="row">
+            <div class="col-xs-3">incomeName</div>
+            <div class="col-xs-9">{{ moneyDetail.incomeName }}</div>
+        </div>
+        <div class="row">
+            <div class="col-xs-3">incomeMoney</div>
+            <div class="col-xs-9">{{ moneyDetail.incomeMoney }}</div>
+        </div>
+        <div class="row">
+            <div class="col-xs-3">incomeType</div>
+            <div class="col-xs-9">{{ incomeTypeForView }}</div>
+        </div>
+        <div class="row">
+            <div class="col-xs-3">memo</div>
+            <div class="col-xs-9">{{ moneyDetail.memo }}</div>
+        </div>
     </div>
-    <div class="row">
-      <div class="col-xs-3">Power</div>
-      <div class="col-xs-9">{{ moneyDetail.costName }}</div>
-    </div>
+
     <br>
     <button type="button" class="btn btn-primary" (click)="submitted=false">Edit</button>
 </div>

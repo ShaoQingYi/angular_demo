@@ -32,13 +32,29 @@ export class MoneyDetailComponent implements OnInit {
   // incomeTypes
   incomeTypes : incomeType[] = [];
 
+  // 表示用
+  costTypeForView?: string;
+  payMethodForView?: string;
+  incomeTypeForView?: string;
+
   // 初期
   moneyDetail = new MoneyDetailEntity(true, this.moneyDetailService.getToday(),
                                       '', 0, '', '', true, '', '' , 0, '');
 
   submitted = false;
 
-  onSubmit() { this.submitted = true; }
+  onSubmit() { 
+    this.moneyDetail.inOrOut = this.isOut;
+   
+    if(this.isOut) {
+      this.costTypeForView = this.costTypes[Number(this.moneyDetail.costType)-1].value;
+      this.payMethodForView = this.payMethods[Number(this.moneyDetail.payMethod)-1].value;  
+    } else {
+      this.incomeTypeForView = this.incomeTypes[Number(this.moneyDetail.incomeType)-1].value;
+    }
+
+    this.submitted = true;
+   }
 
   onClear(moneyDetailForm: NgForm) {
     moneyDetailForm.reset();

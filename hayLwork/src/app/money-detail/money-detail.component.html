@@ -1,0 +1,133 @@
+<div [hidden]="submitted">
+    <h1>XXXX Form</h1>
+    <form (ngSubmit)="onSubmit()" #moneyDetailForm="ngForm">
+        <label for="Out">Out</label>
+        <input id="Out" type="radio"
+           [(ngModel)]="selectedOptionInorOut" value="Out" name="inOrOut"
+           (ngModelChange)="toggleElements()">
+
+        <label for="in">In</label>
+        <input id="in" type="radio"
+            [(ngModel)]="selectedOptionInorOut" value="In" name="inOrOut"
+            (ngModelChange)="toggleElements()">
+        <br>
+
+        <label for="writeTime">writeTime</label>
+        <input type="date" class="form-control" id="writeTime"
+            required
+            [(ngModel)]="moneyDetail.writeTime" name="writeTime"
+            #writeTime="ngModel">
+        <div [hidden]="writeTime.valid || writeTime.pristine"
+            class="alert alert-danger">
+            writeTime is required
+        </div>
+
+        <div *ngIf="isOut">
+          <label for="costName">costName</label>
+          <input type="text" class="form-control" id="costName"
+              required
+              [(ngModel)]="moneyDetail.costName" name="costName"
+              #costName="ngModel">
+          <div [hidden]="costName.valid || costName.pristine"
+              class="alert alert-danger">
+              costName is required
+          </div>
+
+          <label for="costMoney">costMoney</label>
+          <input type="text" class="form-control" id="costMoney"
+              required
+              [(ngModel)]="moneyDetail.costMoney" name="costMoney"
+              #costMoney="ngModel">
+          <div [hidden]="costMoney.valid || costMoney.pristine"
+              class="alert alert-danger">
+              costMoney is required
+          </div>
+          
+          <label for="costType">costType</label>
+          <select class="form-control"  id="costType"
+                  required
+                  [(ngModel)]="moneyDetail.costType" name="costType">
+             <option *ngFor="let costType of costTypes" 
+                    [value]="costType.code">{{costType.value}}</option>
+          </select>
+
+          <label for="payMethod">payMethod</label>
+          <select class="form-control"  id="payMethod"
+                  required
+                  [(ngModel)]="moneyDetail.payMethod" name="payMethod">
+             <option *ngFor="let payMethod of payMethods" 
+                    [value]="payMethod.code">{{payMethod.value}}</option>
+          </select>
+
+          <label for="isDifferenceObject">isDifferenceObject
+            <input type="checkbox" class="form-control" id="isDifferenceObject"
+              required
+              [(ngModel)]="moneyDetail.isDifferenceObject" name="isDifferenceObject">
+          </label>     
+        </div>
+
+        <div *ngIf="!isOut">
+            <label for="incomeName">incomeName</label>
+            <input type="text" class="form-control" id="incomeName"
+                required
+                [(ngModel)]="moneyDetail.incomeName" name="incomeName"
+                #incomeName="ngModel">
+            <div [hidden]="incomeName.valid || incomeName.pristine"
+                class="alert alert-danger">
+                incomeName is required
+            </div>
+  
+            <label for="incomeMoney">incomeMoney</label>
+            <input type="text" class="form-control" id="incomeMoney"
+                required
+                [(ngModel)]="moneyDetail.incomeMoney" name="incomeMoney"
+                #incomeMoney="ngModel">
+            <div [hidden]="incomeMoney.valid || incomeMoney.pristine"
+                class="alert alert-danger">
+                incomeMoney is required
+            </div>
+            
+            <label for="incomeType">incomeType</label>
+            <select class="form-control"  id="incomeType"
+                    required
+                    [(ngModel)]="moneyDetail.incomeType" name="incomeType">
+               <option *ngFor="let incomeType of incomeTypes" 
+                      [value]="incomeType.code">{{incomeType.value}}</option>
+            </select>
+        </div>
+  
+        <br>
+
+        <label for="memo">memo
+            <textarea class="form-control" id="memo"
+                [(ngModel)]="moneyDetail.memo" name="memo"></textarea>
+        </label>
+
+        <br>
+
+        <button type="button" class="btn btn-default" 
+            (click)="onClear(moneyDetailForm)">Clear</button>
+        
+        
+        <button type="submit" class="btn btn-success"
+        [disabled]="!moneyDetailForm.form.valid">Submit</button>
+    </form>
+</div>
+
+<div [hidden]="!submitted">
+    <h2>You submitted the following:</h2>
+    <div class="row">
+      <div class="col-xs-3">Name</div>
+      <div class="col-xs-9">{{ moneyDetail.costName }}</div>
+    </div>
+    <div class="row">
+      <div class="col-xs-3">Alter Ego</div>
+      <div class="col-xs-9">{{ moneyDetail.costName }}</div>
+    </div>
+    <div class="row">
+      <div class="col-xs-3">Power</div>
+      <div class="col-xs-9">{{ moneyDetail.costName }}</div>
+    </div>
+    <br>
+    <button type="button" class="btn btn-primary" (click)="submitted=false">Edit</button>
+</div>

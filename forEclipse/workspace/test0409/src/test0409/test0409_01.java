@@ -10,6 +10,7 @@ import java.util.List;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -19,7 +20,7 @@ public class test0409_01 {
 	 * 1.计算日本支出条数和国内支出条数（取大的一个作为插入行数）
 	 * 2.遍历指定日期所有对象
 	 * 3.找到对应日期起始行
-	  *        ※删除既存的当天日期行数，重新写入
+	  *        ※ 删除既存的当天日期行数，重新写入
 	 * 4.插入上面1计算出的应插条数
 	 * 5.逐条写入数据 ↓
 	 *   ----- 公式用数组创建 -----
@@ -101,41 +102,137 @@ public class test0409_01 {
             int inOrOut_out_count = (int)mockDataList.stream().filter(obj -> obj.getIncomeMoney() != 0).count();
             
 			insertRowCounts = inOrOut_in_count > inOrOut_out_count ? inOrOut_in_count : inOrOut_out_count;
+			
+			boolean isFirstRecord = true;
+			
+			// TODO
+			if (mockDataList.isEmpty()) {
+				// TODO
+				
+				return;
+			}
             
             for (mockData mockData : mockDataList) {
             	String writeTime = mockData.getWriteTime();
-            	
-            	// 遍历行
-                for (Row row : sheet) {
-                	Cell cell = row.getCell(colIndex);
+      
+                /* 1.找到当天日期的起始行
+                 * 2.删除当天日期之前记录的条数，重新写入
+                 * 
+                 * 找到其实行之后其它数据index循环+1
+                 * 只有第一条时做删除操作，之后不做
+                 * 
+                 */
+                if (isFirstRecord) {
+                	// 遍历行
+                    for (Row row : sheet) {
+                    	Cell cell = row.getCell(colIndex);
+                    	
+                    	if (cell != null) {
+                    		// 获取单元格数据
+                    		cell.setCellType(CellType.STRING);
+                    		
+                            String cellValue = cell.getStringCellValue();
+                            
+                            // 记录对象匹配excel日期第一条
+                            if (writeTime.equals(cellValue)) {
+                            	startWriteRowIndex = row.getRowNum();
+                            	break;
+                            }
+                    	}
+                    }
                 	
-                	if (cell != null) {
-                		// 获取单元格数据
-//                        String cellValue = String.valueOf(cell.getNumericCellValue());
-                		cell.setCellType(CellType.STRING);
-                		
-                        String cellValue = cell.getStringCellValue();
-                        
-                        // 记录对象匹配excel日期第一条
-                        if (writeTime.equals(cellValue)) {
-                        	startWriteRowIndex = row.getRowNum();
-                        	break;
-                        }
-                	}
+                    // 删除当日既存旧数据
+                	deleteOldRows(sheet, startWriteRowIndex, writeTime);
+                	
+                	// 插入当日对象行数
+                	insertNewRows(sheet, startWriteRowIndex, insertRowCounts - 1);
+                	
+                    isFirstRecord = false;
                 }
+
                 
                 
+                startWriteRowIndex++;
                 
                 System.out.println(startWriteRowIndex);
-                
-                // 将修改后的工作簿写入文件
-                try (FileOutputStream out = new FileOutputStream(modifiedFilePath)) {
-                    workbook.write(out);
-                }
-            }    
+            }
+            
+			// 将修改后的工作簿写入文件
+			try (FileOutputStream out = new FileOutputStream(modifiedFilePath)) {
+				workbook.write(out);
+			}
+			
+			workbook.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+	}
+	
+	// 插入对象行数-1 因为之前删除的时候留了一行
+	static void insertNewRows(XSSFSheet sheet, int startWriteRowIndex, int insertRowCounts) {
+		Row sourceRow = sheet.getRow(startWriteRowIndex);
+		
+		// 先把下一个日期留出一行
+		sheet.shiftRows(startWriteRowIndex + 1, sheet.getLastRowNum(), 1);
+		
+		for (int j = startWriteRowIndex; j < startWriteRowIndex + insertRowCounts; j++) {
+			
+	        Row targetRow = sheet.createRow(j+1);
+	        
+	        // 复制行的样式
+            ExcelUtils.copyRowStyle(sourceRow, targetRow);
+
+            // 复制单元格
+            for (int i = 0; i < sourceRow.getLastCellNum(); i++) {
+                Cell sourceCell = sourceRow.getCell(i);
+                Cell targetCell = targetRow.getCell(i);
+                if (targetCell == null) {
+                    targetCell = targetRow.createCell(i);
+                }
+                ExcelUtils.copyCell(sourceCell, targetCell);
+            }
+            
+            if (j != startWriteRowIndex + insertRowCounts - 1) {
+            	sheet.shiftRows(j + 2, sheet.getLastRowNum(), 1);
+            }
+		}
+	}	
+	
+	// 删除执行日期既存的数据，只保留一行作为拷贝元
+	static void deleteOldRows(XSSFSheet sheet, int startWriteRowIndex, String writeTime) {
+		int blankRowsCount = 0;
+		
+		// 遍历行
+        for (int i = 0; i<sheet.getLastRowNum(); i++) {
+        	Row row = sheet.getRow(i);
+        	
+        	if (i <= startWriteRowIndex) {
+        		continue;
+        	}
+        	
+        	Cell cell = row.getCell(0);
+        	
+        	if (cell != null) {
+        		// 获取单元格数据
+        		cell.setCellType(CellType.STRING);
+        		
+                String cellValue = cell.getStringCellValue();
+                
+                if (writeTime.equals(cellValue)) {
+                	// removeRow方法有bug，删除后行依然存在 只是清除里面的内容
+                	// sheet.removeRow(row);
+                	// 真正要彻底删掉Row，不是用removeRow，而是用shiftRows，即将后面的行往上移
+//                	sheet.shiftRows(i+1, sheet.getLastRowNum(), -1);
+                	
+                	// 行删除
+                	sheet.removeRow(sheet.getRow(i));
+                	
+					blankRowsCount++;
+                }
+        	}
+        }
+        
+		sheet.shiftRows(startWriteRowIndex + blankRowsCount + 1, sheet.getLastRowNum(), -blankRowsCount);
 	}
 	
 	static List<mockData> makeMockData() {

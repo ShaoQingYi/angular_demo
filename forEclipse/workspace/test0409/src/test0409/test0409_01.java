@@ -8,9 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -32,6 +31,7 @@ public class test0409_01 {
 	 *    For m3        :收入 日本收入的场合 jpInmoneyList
 	 *    For m4        :支出 3.国内现金 chXmoneyList
 	 *                   收入 国内收入的场合 chInmoneyList
+	 *    For Diff      :累加对象的场合 isSumRecordList
 	 *   ----- 公式用数组创建 -----
 	 * 
 	 *   支出的场合 costMoney > 0
@@ -42,12 +42,17 @@ public class test0409_01 {
 	 * 
 	 * 		 ※ 日本现金的场合
 	 * 			jpXmoneyList.add [C] + RowIndex
+	 *          
+	  *                         ※ 累加对象的场合
+	 * 			  isSumRecordList.add [C] + RowIndex
+	 * 
 	 * 		   JCB的场合
 	 * 			jcbList.add [C] + RowIndex
 	 * 
 	 * 	   国内支出的场合 costType in {3.国内现金 4.国内信用卡1 5.国内信用卡2 6.花呗白条等}
-	 *       costName  → [K] + RowIndex
-	 * 		 costMoney → [L] + RowIndex
+	 *       costName  → [L] + RowIndex
+	 * 		 costMoney → [M] + RowIndex
+	 *       costType  → [N] + RowIndex
 	 * 
 	 * 		 ※ [3.国内现金]的场合
 	 * 			chXmoneyList.add [M] + RowIndex
@@ -111,14 +116,33 @@ public class test0409_01 {
 				
 				return;
 			}
-            
+
+			 /*   ----- 公式用数组创建 -----
+			 *    For day m tol :日本现金场合 jpXmoneyList
+			 *    For m1        :日本JCB场合 jcbList
+			 *    For m2        :4.国内信用卡1 }
+			 *                   5.国内信用卡2 } → chTzList 
+			 *                   6.花呗白条等  }
+			 *    For m3        :收入 日本收入的场合 jpInmoneyList
+			 *    For m4        :支出 3.国内现金 chXmoneyList
+			 *                   收入 国内收入的场合 chInmoneyList
+			 *    For Diff      :累加对象的场合 isSumRecordList
+			 *   ----- 公式用数组创建 -----*/
+			List<String> jpXmoneyList = new ArrayList<String>();
+			List<String> jcbList = new ArrayList<String>();
+			List<String> chTzList = new ArrayList<String>();
+			List<String> jpInmoneyList = new ArrayList<String>();
+			List<String> chXmoneyList = new ArrayList<String>();
+			List<String> chInmoneyList = new ArrayList<String>();
+			List<String> isSumRecordList = new ArrayList<String>();
+			
             for (mockData mockData : mockDataList) {
             	String writeTime = mockData.getWriteTime();
       
                 /* 1.找到当天日期的起始行
                  * 2.删除当天日期之前记录的条数，重新写入
                  * 
-                 * 找到其实行之后其它数据index循环+1
+                 * 找到起始行之后其它数据index循环+1
                  * 只有第一条时做删除操作，之后不做
                  * 
                  */
@@ -149,7 +173,98 @@ public class test0409_01 {
                 	
                     isFirstRecord = false;
                 }
-
+                
+                String costName = mockData.getCostName();
+                Integer costMoney = mockData.getCostMoney();
+                String costType = mockData.getCostType();
+                String payMethod = mockData.getPayMethod();
+                boolean isDifferenceObject = mockData.isDifferenceObject();
+                String memo = mockData.getMemo();
+                String incomeName = mockData.getIncomeName();
+                Integer incomeMoney = mockData.getIncomeMoney();
+                String incomeType = mockData.getIncomeType();
+                
+                // 获取当前要写入行
+                Row row = sheet.getRow(startWriteRowIndex);
+                
+                // 支出的场合 costMoney > 0
+                if(costMoney > 0) {
+                	// 日本支出的场合 costType in {1.日本现金 2.JCB信用卡}
+                	if (costType=="1" || costType=="2") {
+                		/*
+                		 * 	costName  → [B] + RowIndex
+                		 *  costMoney → [C] + RowIndex
+                		 * 	costType  → [D] + RowIndex
+                		 */
+                		setCellValue(row,1,costName);
+                		setCellValue(row,2,costMoney);
+                		setCellValue(row,3,costType);
+//                		row.getCell(1).setCellValue(costName);
+//                		row.getCell(2).setCellValue(costMoney);
+//                		row.getCell(3).setCellValue(costType);
+                		
+                		 /* 日本现金的场合
+                		 * 	  jpXmoneyList.add [C] + RowIndex
+                		 *          
+                		  *           ※ 累加对象的场合
+                		 *    isSumRecordList.add [C] + RowIndex
+                		 * 
+                		 * JCB的场合
+                		 * 	  jcbList.add [C] + RowIndex
+                		 */
+                		
+                		// 日本现金的场合
+                		if(costType=="1") {
+                		  jpXmoneyList.add("C" + startWriteRowIndex);
+                		  
+                		  // 累加对象的场合
+                		  if(isDifferenceObject) {
+                			  isSumRecordList.add("C" + startWriteRowIndex);
+                		  }
+                		} else {
+                		  // JCB的场合
+                		  jcbList.add("C" + startWriteRowIndex);
+                		}
+                	} else {
+                		// 国内支出的场合
+                		
+	            		 /* 国内支出的场合 costType in {3.国内现金 4.国内信用卡1 5.国内信用卡2 6.花呗白条等}
+	            		 *       costName  → [L] + RowIndex
+	            		 * 		 costMoney → [M] + RowIndex
+	            		 *       costType  → [N] + RowIndex
+	            		 *       
+	            		 * 	  ※ [3.国内现金]的场合
+	            		 * 			chXmoneyList.add [M] + RowIndex
+	            		 * 	   [4.国内信用卡1 5.国内信用卡2 6.花呗白条等]的场合
+	            		 * 			chTzList.add [M] + RowIndex
+	            		 *
+	            		 */
+	                		
+	            		 /*   costName  → [L] + RowIndex
+	           		     * 	  costMoney → [M] + RowIndex
+	           		     *    costType  → [N] + RowIndex
+	           		     */
+//	            		row.getCell(11).setCellValue(costName);
+//	            		row.getCell(12).setCellValue(costMoney);
+//	            		row.getCell(13).setCellValue(costType);
+	            		
+	            		setCellValue(row,11,costName);
+                		setCellValue(row,12,costMoney);
+                		setCellValue(row,13,costType);
+	            		
+	            		//  [3.国内现金]的场合
+	            		if(costType == "3") {
+	            			chXmoneyList.add("M" + startWriteRowIndex);
+	            		}else {
+	            			// [4.国内信用卡1 5.国内信用卡2 6.花呗白条等]的场合
+	            			chTzList.add("M" + startWriteRowIndex);
+	            		}
+                	}
+                	
+                } else {
+                  // 收入的场合
+                	
+                }
                 
                 
                 startWriteRowIndex++;
@@ -166,6 +281,22 @@ public class test0409_01 {
         } catch (IOException e) {
             e.printStackTrace();
         }
+	}
+	
+	static void setCellValue(Row row,Integer columnIndex, String value) {
+		if(row.getCell(columnIndex) == null) {
+			row.createCell(columnIndex).setCellValue(value);
+		} else {
+			row.getCell(columnIndex).setCellValue(value);
+		}
+	}
+	
+	static void setCellValue(Row row,Integer columnIndex, Integer value) {
+		if(row.getCell(columnIndex) == null) {
+			row.createCell(columnIndex).setCellValue(value);
+		} else {
+			row.getCell(columnIndex).setCellValue(value);
+		}
 	}
 	
 	// 插入对象行数-1 因为之前删除的时候留了一行
@@ -240,11 +371,11 @@ public class test0409_01 {
 
 		mockData mockData1 = new mockData(true, "2024/4/1", "morningFD1", 501, "1", "2", true, "memotest",
 				"incomeName1", 900, "1");
-		mockData mockData2 = new mockData(false, "2024/4/1", "morningFD2", 502, "1", "2", true, "memotest",
+		mockData mockData2 = new mockData(false, "2024/4/1", "morningFD2", 502, "2", "2", true, "memotest",
 				"incomeName1", 900, "1");
-		mockData mockData3 = new mockData(true, "2024/4/1", "morningFD3", 503, "1", "2", false, "memotest",
+		mockData mockData3 = new mockData(true, "2024/4/1", "morningFD3", 503, "3", "2", false, "memotest",
 				"incomeName1", 900, "1");
-		mockData mockData4 = new mockData(true, "2024/4/1", "morningFD4", 504, "1", "2", true, "memotest",
+		mockData mockData4 = new mockData(true, "2024/4/1", "morningFD4", 504, "4", "2", true, "memotest",
 				"incomeName1", 900, "1");
 
 		mockDataList.add(mockData1);

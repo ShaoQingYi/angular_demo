@@ -35,7 +35,7 @@ public class test0409_01 {
 	 *   ----- 公式用数组创建 -----
 	 * 
 	 *   支出的场合 costMoney > 0
-	 * 	   日本支出的场合 costType in {1.日本现金 2.JCB信用卡}
+	 * 	   日本支出的场合 payMethod in {1.日本现金 2.JCB信用卡}
 	 * 		 costName  → [B] + RowIndex
 	 * 		 costMoney → [C] + RowIndex
 	 * 		 costType  → [D] + RowIndex
@@ -49,10 +49,10 @@ public class test0409_01 {
 	 * 		   JCB的场合
 	 * 			jcbList.add [C] + RowIndex
 	 * 
-	 * 	   国内支出的场合 costType in {3.国内现金 4.国内信用卡1 5.国内信用卡2 6.花呗白条等}
+	 * 	   国内支出的场合 payMethod in {3.国内现金 4.国内信用卡1 5.国内信用卡2 6.花呗白条等}
 	 *       costName  → [L] + RowIndex
 	 * 		 costMoney → [M] + RowIndex
-	 *       costType  → [N] + RowIndex
+	 *       payMethod → [N] + RowIndex
 	 * 
 	 * 		 ※ [3.国内现金]的场合
 	 * 			chXmoneyList.add [M] + RowIndex
@@ -190,7 +190,7 @@ public class test0409_01 {
                 // 支出的场合 costMoney > 0
                 if(costMoney > 0) {
                 	// 日本支出的场合 costType in {1.日本现金 2.JCB信用卡}
-                	if (costType=="1" || costType=="2") {
+                	if (payMethod=="1" || payMethod=="2") {
                 		/*
                 		 * 	costName  → [B] + RowIndex
                 		 *  costMoney → [C] + RowIndex
@@ -214,7 +214,7 @@ public class test0409_01 {
                 		 */
                 		
                 		// 日本现金的场合
-                		if(costType=="1") {
+                		if(payMethod=="1") {
                 		  jpXmoneyList.add("C" + startWriteRowIndex);
                 		  
                 		  // 累加对象的场合
@@ -231,7 +231,7 @@ public class test0409_01 {
 	            		 /* 国内支出的场合 costType in {3.国内现金 4.国内信用卡1 5.国内信用卡2 6.花呗白条等}
 	            		 *       costName  → [L] + RowIndex
 	            		 * 		 costMoney → [M] + RowIndex
-	            		 *       costType  → [N] + RowIndex
+	            		 *       payMethod  → [N] + RowIndex
 	            		 *       
 	            		 * 	  ※ [3.国内现金]的场合
 	            		 * 			chXmoneyList.add [M] + RowIndex
@@ -242,18 +242,18 @@ public class test0409_01 {
 	                		
 	            		 /*   costName  → [L] + RowIndex
 	           		     * 	  costMoney → [M] + RowIndex
-	           		     *    costType  → [N] + RowIndex
+	           		     *    payMethod  → [N] + RowIndex
 	           		     */
 //	            		row.getCell(11).setCellValue(costName);
 //	            		row.getCell(12).setCellValue(costMoney);
-//	            		row.getCell(13).setCellValue(costType);
+//	            		row.getCell(13).setCellValue(payMethod);
 	            		
 	            		setCellValue(row,11,costName);
                 		setCellValue(row,12,costMoney);
-                		setCellValue(row,13,costType);
+                		setCellValue(row,13,payMethod);
 	            		
 	            		//  [3.国内现金]的场合
-	            		if(costType == "3") {
+	            		if(payMethod == "3") {
 	            			chXmoneyList.add("M" + startWriteRowIndex);
 	            		}else {
 	            			// [4.国内信用卡1 5.国内信用卡2 6.花呗白条等]的场合
@@ -262,8 +262,30 @@ public class test0409_01 {
                 	}
                 	
                 } else {
-                  // 收入的场合
+	                 // 收入的场合
+	                	
+	               	 /*   收入的场合 incomeMoney > 0
+	            	 * 		 incomeName  → [H] + RowIndex
+	            	 * 		 incomeMoney → [I] + RowIndex
+	            	 * 		 incomeType  → [J] + RowIndex
+	            	 * 
+	            	 * 		 ※  日本收入的场合 incomeType in {1.日本工资}
+	            	 * 			jpInmoneyList.add [I] + RowIndex
+	            	 *		   国内收入的场合 incomeType not in {1.日本工资}
+	            	 * 			chInmoneyList.add [I] + RowIndex
+	            	 */
                 	
+                	setCellValue(row,7,incomeName);
+            		setCellValue(row,8,incomeMoney);
+            		setCellValue(row,9,incomeType);
+            		
+            		// 日本收入的场合 incomeType in {1.日本工资}
+            		if(incomeType == "1") {
+            			jpInmoneyList.add("I" + startWriteRowIndex);
+            		}else {
+            			// 国内收入的场合 incomeType not in {1.日本工资}
+            			chInmoneyList.add("I" + startWriteRowIndex);
+            		}
                 }
                 
                 
@@ -369,14 +391,14 @@ public class test0409_01 {
 	static List<mockData> makeMockData() {
 		List<mockData> mockDataList = new ArrayList<mockData>();
 
-		mockData mockData1 = new mockData(true, "2024/4/1", "morningFD1", 501, "1", "2", true, "memotest",
+		mockData mockData1 = new mockData(true, "2024/4/1", "morningFD1", 501, "10", "1", true, "memotest",
 				"incomeName1", 900, "1");
-		mockData mockData2 = new mockData(false, "2024/4/1", "morningFD2", 502, "2", "2", true, "memotest",
-				"incomeName1", 900, "1");
-		mockData mockData3 = new mockData(true, "2024/4/1", "morningFD3", 503, "3", "2", false, "memotest",
-				"incomeName1", 900, "1");
-		mockData mockData4 = new mockData(true, "2024/4/1", "morningFD4", 504, "4", "2", true, "memotest",
-				"incomeName1", 900, "1");
+		mockData mockData2 = new mockData(false, "2024/4/1", "morningFD2", 502, "11", "2", true, "memotest",
+				"incomeName2", 900, "1");
+		mockData mockData3 = new mockData(true, "2024/4/1", "morningFD3", 503, "1", "3", false, "memotest",
+				"incomeName3", 900, "1");
+		mockData mockData4 = new mockData(true, "2024/4/1", "morningFD4", 504, "1", "4", true, "memotest",
+				"incomeName4", 900, "1");
 
 		mockDataList.add(mockData1);
 		mockDataList.add(mockData2);

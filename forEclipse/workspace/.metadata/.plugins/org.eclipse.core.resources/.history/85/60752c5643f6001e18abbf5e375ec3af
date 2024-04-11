@@ -1,0 +1,15 @@
+package test0409;
+
+public class mockData {
+    private boolean inOrOut;
+    private String writeTime;
+    private String costName;
+    private Integer costMoney;
+    private String costType;
+    private String payMethod;
+    private boolean isDifferenceObject;
+    private String memo;
+    private String incomeName;
+    private Integer incomeMoney;
+    private String incomeType;
+}

@@ -1,0 +1,505 @@
+package test0409;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.poi.POIXMLDocumentPart;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
+import org.apache.poi.hssf.usermodel.HSSFDateUtil;
+import org.apache.poi.hssf.usermodel.HSSFEvaluationWorkbook;
+import org.apache.poi.hssf.usermodel.HSSFPicture;
+import org.apache.poi.hssf.usermodel.HSSFPictureData;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFShape;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.formula.EvaluationWorkbook;
+import org.apache.poi.ss.formula.FormulaParser;
+import org.apache.poi.ss.formula.FormulaRenderer;
+import org.apache.poi.ss.formula.FormulaRenderingWorkbook;
+import org.apache.poi.ss.formula.FormulaType;
+import org.apache.poi.ss.formula.ptg.AreaPtg;
+import org.apache.poi.ss.formula.ptg.Ptg;
+import org.apache.poi.ss.formula.ptg.RefPtgBase;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.PictureData;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
+import org.apache.poi.xssf.usermodel.XSSFDrawing;
+import org.apache.poi.xssf.usermodel.XSSFPicture;
+import org.apache.poi.xssf.usermodel.XSSFPictureData;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFShape;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTMarker;
+
+public class ExcelUtils {
+
+//    /**
+//     * 返回到response
+//     * @param workbook
+//     * @param fileName
+//     * @param response
+//     */
+//    public static void setResponse(Workbook workbook, String fileName, HttpServletResponse response) {
+//        OutputStream outputStream = null;
+//        try {
+//            response.setContentType("application/vnd.ms-excel");
+//            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
+//            response.setHeader("Pragma", "no-cache");
+//            response.setHeader("Expires", "0");
+//            outputStream=response.getOutputStream();
+//            workbook.write(outputStream);
+//            outputStream.flush();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }finally {
+//            try {
+//                outputStream.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
+
+    /**
+     * 根据行列创建单元格并赋值
+     * @param sheet
+     * @param style
+     * @param row
+     * @param column
+     * @param value
+     */
+    public static void setCellValue(HSSFSheet sheet,HSSFCellStyle style,int row,int column,Object value){
+        HSSFRow rowData= sheet.getRow(row);
+        if (rowData==null) {
+            rowData = sheet.createRow(row);
+        }
+        HSSFCell cell =null;
+        if (value==null||value instanceof String){
+            cell = rowData.createCell(column, CellType.STRING);
+            String str= (String) value;
+            if (value==null) {
+                str="";
+            }
+            cell.setCellValue(str);
+        }else {
+            cell = rowData.createCell(column,CellType.NUMERIC);
+            Integer i= (Integer) value;
+            cell.setCellValue(i);
+        }
+        cell.setCellStyle(style);
+    }
+    /**
+     * 根据行列创建单元格并赋值
+     * @param row
+     * @param column
+     * @param value
+     */
+    public static void setCellValue(Row row,int column,Object value){
+        Cell cell =row.getCell(column);
+        if (cell == null) cell = row.createCell(column);
+        if (value==null||value instanceof String){
+            cell.setCellType(CellType.STRING);
+            String str= (String) value;
+            if (value==null) {
+                str="";
+            }
+            cell.setCellValue(str);
+        }else {
+            cell.setCellType(CellType.NUMERIC);
+            Integer i= (Integer) value;
+            cell.setCellValue(i);
+        }
+    }
+    public static HSSFCellStyle getCellStyle(HSSFWorkbook workbook, boolean isTitle) {
+        HSSFCellStyle style = workbook.createCellStyle();
+        style.setAlignment(HorizontalAlignment.CENTER); // 创建一个居中格式
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        style.setWrapText(true);
+
+        //边框样式
+        //设置上边框线条类型
+        style.setBorderTop(BorderStyle.THIN);
+        //设置右边框线条类型
+        style.setBorderRight(BorderStyle.THIN);
+        //设置下边框线条类型
+        style.setBorderBottom(BorderStyle.THIN);
+        //设置左边框线条类型
+        style.setBorderLeft(BorderStyle.THIN);
+        //设置上边框线条颜色
+        style.setTopBorderColor(IndexedColors.BLACK.getIndex());
+        //设置右边框线条颜色
+        style.setRightBorderColor(IndexedColors.BLACK.getIndex());
+        //设置下边框线条颜色
+        style.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+        //设置左边框线条颜色
+        style.setLeftBorderColor(IndexedColors.BLACK.getIndex());
+        if (isTitle) {
+            //设置背景颜色
+            style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            Font font = workbook.createFont();
+            font.setBold(true);
+            style.setFont(font);
+        }
+        return style;
+    }
+
+    /**
+     * 获取单元格各类型值，返回字符串类型
+     *
+     * @param cell cell
+     * @return String
+     */
+    public static Object getCellValueByCell(Cell cell) {
+        //判断是否为null或空串
+        if (cell == null || cell.toString().trim().equals("")) {
+            return null;
+        }
+        Object cellValue = "";
+        CellType cellType = cell.getCellTypeEnum();
+        switch (cellType) {
+            case NUMERIC: // 数字
+                short format = cell.getCellStyle().getDataFormat();
+                if (DateUtil.isCellDateFormatted(cell)) { // 日期
+                    SimpleDateFormat sdf;
+                    if (format == 20 || format == 32) {
+                        sdf = new SimpleDateFormat("HH:mm");
+                    } else if (format == 14 || format == 31 || format == 57 || format == 58) {
+                        sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    } else if (format == 179) {
+                        sdf = new SimpleDateFormat("HH:mm:ss");
+                    } else {
+                        sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    }
+                    cellValue = sdf.format(cell.getDateCellValue());
+                } else {
+                    cellValue=(int)cell.getNumericCellValue();//**double转int
+                }
+                break;
+            case STRING: // 字符串
+                cellValue = cell.getStringCellValue().replaceAll(" ","");
+                break;
+            case BOOLEAN: // Boolean
+                cellValue = cell.getBooleanCellValue() + "";
+                break;
+            case FORMULA: // 公式
+                cell.setCellType(CellType.NUMERIC);
+                cellValue=(int)cell.getNumericCellValue();//**double转int
+                break;
+            default:
+                cellValue = cell.getStringCellValue();
+                break;
+        }
+        return cellValue;
+    }
+
+    /**
+     * 获取单元格各类型值，返回字符串类型
+     *
+     * @param cell cell
+     * @return String
+     */
+    public static String getStringCellValueByCell(Cell cell) {
+        //判断是否为null或空串
+        if (cell == null || cell.toString().trim().equals("")) {
+            return "";
+        }
+        String cellValue = "";
+        CellType cellType = cell.getCellTypeEnum();
+        switch (cellType) {
+            case NUMERIC: // 数字
+                short format = cell.getCellStyle().getDataFormat();
+                if (DateUtil.isCellDateFormatted(cell)) { // 日期
+                    SimpleDateFormat sdf;
+                    if (format == 20 || format == 32) {
+                        sdf = new SimpleDateFormat("HH:mm");
+                    } else if (format == 14 || format == 31 || format == 57 || format == 58) {
+                        sdf = new SimpleDateFormat("yyyy-MM-dd");
+                    } else if (format == 179) {
+                        sdf = new SimpleDateFormat("HH:mm:ss");
+                    } else {
+                        sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    }
+                    cellValue = sdf.format(cell.getDateCellValue());
+                } else {
+                    cell.setCellType(1);
+                    cellValue=cell.getStringCellValue()+"";//**double转int
+                }
+                break;
+            case STRING: // 字符串
+                cellValue = cell.getStringCellValue().replaceAll(" ","");
+                break;
+            case BOOLEAN: // Boolean
+                cellValue = cell.getBooleanCellValue() + "";
+                break;
+            default:
+                cellValue = cell.getStringCellValue();
+                break;
+        }
+        return cellValue;
+    }
+
+//    /**
+//     * 是否是合并单元格
+//     * @param sheet sheet表
+//     * @param row 判断单元格的行
+//     * @param colum 判断单元格的列
+//     * @return
+//     */
+//    public static ExcelResult isMergedCell(Sheet sheet,int row,int colum){
+//        int numMergedRegions = sheet.getNumMergedRegions();
+//        for (int i=0;i<numMergedRegions;i++){
+//            CellRangeAddress mergedRegion = sheet.getMergedRegion(i);
+//            int firstRow = mergedRegion.getFirstRow();
+//            int lastRow = mergedRegion.getLastRow();
+//            int firstColumn = mergedRegion.getFirstColumn();
+//            int lastColumn = mergedRegion.getLastColumn();
+//            if (row>=firstRow&&row<=lastRow){
+//                if (colum>=firstColumn&&colum<=lastColumn){
+//                    return new ExcelResult(true,firstRow,lastRow,firstColumn,lastColumn);
+//                }
+//            }
+//        }
+//        return new ExcelResult(false,0,0,0,0);
+//        }
+
+
+    /**
+     * 获取图片和位置 (xls)
+     * @param sheet
+     * @return
+     * @throws IOException
+     */
+    public static Map<String, PictureData> getPictures (Sheet sheet,int type) throws IOException {
+        Map<String, PictureData> map = new HashMap<>();
+        if (type==1) {
+            List<HSSFShape> list = ((HSSFSheet)sheet).getDrawingPatriarch().getChildren();
+            for (HSSFShape shape : list) {
+                if (shape instanceof HSSFPicture) {
+                    HSSFPicture picture = (HSSFPicture) shape;
+                    HSSFClientAnchor cAnchor = picture.getClientAnchor();
+                    HSSFPictureData pdata = picture.getPictureData();
+                    String key = cAnchor.getRow1() + "-" + cAnchor.getCol1(); // 行号-列号
+                    map.put(getStringCellValueByCell(sheet.getRow(cAnchor.getCol1()).getCell(7)), pdata);
+                }
+            }
+        }else {
+            List<POIXMLDocumentPart> list = ((XSSFSheet)sheet).getRelations();
+            for (POIXMLDocumentPart part : list) {
+                if (part instanceof XSSFDrawing) {
+                    XSSFDrawing drawing = (XSSFDrawing) part;
+                    List<XSSFShape> shapes = drawing.getShapes();
+                    for (XSSFShape shape : shapes) {
+                        XSSFPicture picture = (XSSFPicture) shape;
+                        XSSFClientAnchor anchor = picture.getPreferredSize();
+                        CTMarker marker = anchor.getFrom();
+                        String key = marker.getRow() + "-" + marker.getCol();
+                        map.put(getStringCellValueByCell(sheet.getRow(marker.getRow()).getCell(7)), picture.getPictureData());
+                    }
+                }
+            }
+        }
+        return map;
+    }
+
+    /**
+     * 获取图片和位置 (xlsx)
+     * @param sheet
+     * @return
+     * @throws IOException
+     */
+    public static Map<String, XSSFPictureData> getPictures (XSSFSheet sheet) throws IOException {
+        Map<String, XSSFPictureData> map = new HashMap<>();
+        List<POIXMLDocumentPart> list = sheet.getRelations();
+        for (POIXMLDocumentPart part : list) {
+            if (part instanceof XSSFDrawing) {
+                XSSFDrawing drawing = (XSSFDrawing) part;
+                List<XSSFShape> shapes = drawing.getShapes();
+                for (XSSFShape shape : shapes) {
+                    XSSFPicture picture = (XSSFPicture) shape;
+                    XSSFClientAnchor anchor = picture.getPreferredSize();
+                    CTMarker marker = anchor.getFrom();
+                    String key = marker.getRow() + "-" + marker.getCol();
+                    map.put(key, picture.getPictureData());
+                }
+            }
+        }
+        return map;
+    }
+//    //获取文件格式，1:xls、2:xlsx
+//    public static int  getExcelType(InputStream inp, String password){
+//        try {
+//            InputStream is = FileMagic.prepareToCheckMagic(inp);
+//            FileMagic fm = FileMagic.valueOf(is);
+//            switch(fm) {
+//                case OLE2:
+//                    return 1;
+//                case OOXML:
+//                    return 2;
+//                default:
+//                    return 1;
+//            }
+//        }catch (Exception e){
+//            return 1;
+//        }
+//    }
+    /**
+     * 复制行
+     * @param startRow 开始行
+     * @param endRow 结束行
+     * @param pPosition 目标行
+     * @param sheet 工作表对象
+     */
+    public static void copyRows(int startRow, int endRow, int pPosition, Sheet sheet){
+        int pStartRow=startRow;
+        int pEndRow=endRow;
+        int targetRowFrom;
+        int targetRowTo;
+        int columnCount;
+        CellRangeAddress region=null;
+        int i;
+        int j;
+        if(pStartRow == -1 || pEndRow == -1) {
+            return;
+        }
+        // 拷贝合并的单元格
+        for(i=0;i<sheet.getNumMergedRegions();i++){
+            region=sheet.getMergedRegion(i);
+            if((region.getFirstRow() >= pStartRow) && (region.getLastRow() <= pEndRow)) {
+                targetRowFrom=region.getFirstRow()-pStartRow+pPosition;
+                targetRowTo=region.getLastRow()-pStartRow+pPosition;
+                CellRangeAddress newRegion=region.copy();
+                newRegion.setFirstRow(targetRowFrom);
+                newRegion.setFirstColumn(region.getFirstColumn());
+                newRegion.setLastRow(targetRowTo);
+                newRegion.setLastColumn(region.getLastColumn());
+                sheet.addMergedRegion(newRegion);
+            }
+        }
+        // 设置列宽
+        for(i=pStartRow;i<=pEndRow;i++){
+            Row sourceRow=sheet.getRow(i);
+            columnCount=sourceRow.getLastCellNum();
+            if(sourceRow != null){
+                Row newRow=sheet.createRow(pPosition - pStartRow + i);
+                newRow.setHeight(sourceRow.getHeight());
+                for(j=0;j<columnCount;j++){
+                    Cell templateCell=sourceRow.getCell(j);
+                    if(templateCell != null){
+                        Cell newCell = newRow.createCell(j);
+                        copyCell(templateCell, newCell);
+                        if (templateCell.getCellType() == Cell.CELL_TYPE_FORMULA) {
+                            Cell fromCell = sheet.getRow(i).getCell(j);
+                            Cell destCell = newRow.getCell(j);
+                            copyFormula(fromCell, destCell, sheet.getWorkbook());
+                        }
+//                        Cell newCell=newRow.createCell(j);
+//                        copyCell(templateCell,newCell);
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * 复制单元格公式
+     */
+    public static void copyFormula(Cell srcCell, Cell destCell, Workbook book) {
+        String formula = srcCell.getCellFormula();
+        EvaluationWorkbook ew;
+        FormulaRenderingWorkbook rw;
+        Ptg[] ptgs;
+        ew = HSSFEvaluationWorkbook.create((HSSFWorkbook) book);
+        ptgs = FormulaParser.parse(formula, (HSSFEvaluationWorkbook) ew, FormulaType.CELL, 0);
+        rw = (HSSFEvaluationWorkbook) ew;
+        for (Ptg ptg : ptgs) {
+            int shiftRows = destCell.getRowIndex() - srcCell.getRowIndex();
+            int shiftCols = destCell.getColumnIndex() - srcCell.getColumnIndex();
+            if (ptg instanceof RefPtgBase) {
+                RefPtgBase ref = (RefPtgBase) ptg;
+                if (ref.isColRelative()) ref.setColumn(ref.getColumn() + shiftCols);
+                if (ref.isRowRelative()) ref.setRow(ref.getRow() + shiftRows);
+            } else if (ptg instanceof AreaPtg) {
+                AreaPtg ref = (AreaPtg) ptg;
+                if (ref.isFirstColRelative()) ref.setFirstColumn(ref.getFirstColumn() + shiftCols);
+                if (ref.isLastColRelative()) ref.setLastColumn(ref.getLastColumn() + shiftCols);
+                if (ref.isFirstRowRelative()) ref.setFirstRow(ref.getFirstRow() + shiftRows);
+                if (ref.isLastRowRelative()) ref.setLastRow(ref.getLastRow() + shiftRows);
+            }
+        }
+        destCell.setCellFormula(FormulaRenderer.toFormulaString(rw, ptgs));
+    }
+    /**
+     * 复制单元格
+     * @param srcCell 原始单元格
+     * @param distCell 目标单元格
+     */
+    public static void copyCell(Cell srcCell,Cell distCell){
+        distCell.setCellStyle(srcCell.getCellStyle());
+        if(srcCell.getCellComment() != null){
+            distCell.setCellComment(srcCell.getCellComment());
+        }
+        int srcCellType=srcCell.getCellType();
+        distCell.setCellType(srcCellType);
+        if(srcCellType==XSSFCell.CELL_TYPE_NUMERIC){
+            if(HSSFDateUtil.isCellDateFormatted(srcCell)){
+                distCell.setCellValue(srcCell.getDateCellValue());
+            }
+            else{
+                distCell.setCellValue(srcCell.getNumericCellValue());
+            }
+        }
+        else if(srcCellType==XSSFCell.CELL_TYPE_STRING){
+            distCell.setCellValue(srcCell.getRichStringCellValue());
+        }
+        else if(srcCellType==XSSFCell.CELL_TYPE_BLANK){
+            // nothing21
+        }
+        else if(srcCellType==XSSFCell.CELL_TYPE_BOOLEAN){
+            distCell.setCellValue(srcCell.getBooleanCellValue());
+        }
+        else if(srcCellType==XSSFCell.CELL_TYPE_ERROR){
+            distCell.setCellErrorValue(srcCell.getErrorCellValue());
+        }
+        else if(srcCellType==XSSFCell.CELL_TYPE_FORMULA){
+            distCell.setCellFormula(srcCell.getCellFormula());
+        }
+        else{ // nothing29
+        }
+    }
+    /**
+     * 表格中指定位置插入行
+     * @param sheet 工作表对象
+     * @param rowIndex 指定的行数
+     * @return 当前行对象
+     */
+    public static XSSFRow insertRow(XSSFSheet sheet,int rowIndex) {
+        XSSFRow row=null;
+        if(sheet.getRow(rowIndex) != null) {
+            int lastRowNo=sheet.getLastRowNum();
+            sheet.shiftRows(rowIndex,lastRowNo,1);
+        }
+        row=sheet.createRow(rowIndex);
+        return row;
+    }
+}
+
+

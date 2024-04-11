@@ -152,6 +152,9 @@ public class test0409_01 {
 			List<String> chInmoneyList = new ArrayList<String>();
 			List<String> isSumRecordList = new ArrayList<String>();
 			
+			// memo用
+			StringBuilder memoSb = new StringBuilder();
+			
             for (mockData mockData : mockDataList) {
             	String writeTime = mockData.getWriteTime();
       
@@ -235,15 +238,15 @@ public class test0409_01 {
                 		
                 		// 日本现金的场合
                 		if(payMethod=="1") {
-                		  jpXmoneyList.add("C" + startWriteRowIndex);
+                		  jpXmoneyList.add("C" + (startWriteRowIndex + 1));
                 		  
                 		  // 累加对象的场合
                 		  if(isDifferenceObject) {
-                			  isSumRecordList.add("C" + startWriteRowIndex);
+                			  isSumRecordList.add("C" + (startWriteRowIndex + 1));
                 		  }
                 		} else {
                 		  // JCB的场合
-                		  jcbList.add("C" + startWriteRowIndex);
+                		  jcbList.add("C" + (startWriteRowIndex + 1));
                 		}
                 	} else {
                 		// 国内支出的场合
@@ -277,10 +280,10 @@ public class test0409_01 {
 	            		
 	            		//  [3.国内现金]的场合
 	            		if(payMethod == "3") {
-	            			chXmoneyList.add("M" + startWriteRowIndexForCHout);
+	            			chXmoneyList.add("M" + (startWriteRowIndexForCHout + 1));
 	            		}else {
 	            			// [4.国内信用卡1 5.国内信用卡2 6.花呗白条等]的场合
-	            			chTzList.add("M" + startWriteRowIndexForCHout);
+	            			chTzList.add("M" + (startWriteRowIndexForCHout + 1));
 	            		}
 	            		
 	            		startWriteRowIndexForCHout++;
@@ -309,10 +312,10 @@ public class test0409_01 {
             		
             		// 日本收入的场合 incomeType in {1.日本工资}
             		if(incomeType == "1") {
-            			jpInmoneyList.add("I" + startWriteRowIndexForIncome);
+            			jpInmoneyList.add("I" + (startWriteRowIndexForIncome + 1));
             		}else {
             			// 国内收入的场合 incomeType not in {1.日本工资}
-            			chInmoneyList.add("I" + startWriteRowIndexForIncome);
+            			chInmoneyList.add("I" + (startWriteRowIndexForIncome + 1));
             		}
             		
             		startWriteRowIndexForIncome++;
@@ -322,6 +325,8 @@ public class test0409_01 {
                 startWriteRowIndex++;
                 
                 System.out.println(startWriteRowIndex);
+                
+                memoSb.append(memo).append("\r\n");
             }
             
 	       	 /* 6.单元格合并
@@ -340,8 +345,29 @@ public class test0409_01 {
             		 startWriteRowIndexBefore_forStep6,
             		 startWriteRowIndexBefore_forStep6+insertRowCounts-1);
             
+            // 7.上记6中合并的单元格中，写入对应公式
+        	/*   ----- 公式用数组创建 -----
+        	 *    For day m tol :日本现金场合 jpXmoneyList
+        	 *    For m1        :日本JCB场合 jcbList
+        	 *    For m2        :4.国内信用卡1 }
+        	 *                   5.国内信用卡2 } → chTzList 
+        	 *                   6.花呗白条等  }
+        	 *    For m3        :收入 日本收入的场合 jpInmoneyList
+        	 *    For m4        :支出 3.国内现金 chXmoneyList
+        	 *                   收入 国内收入的场合 chInmoneyList
+        	 *    For Diff      :累加对象的场合 isSumRecordList
+        	 *   ----- 公式用数组创建 -----
+        	 */
+             writeFormulaToRow(sheet,startWriteRowIndexBefore_forStep6,
+            		 jpXmoneyList,jcbList,chTzList,jpInmoneyList,chXmoneyList,chInmoneyList,isSumRecordList);
+             
+             // 写入memo
+             setCellValue(sheet.getRow(startWriteRowIndexBefore_forStep6), 18, memoSb.toString());
             
-			// 将修改后的工作簿写入文件
+             // 强制公式生效，不然tool写入的公式需要点击一下cell才生效
+             sheet.setForceFormulaRecalculation(true);
+             
+			// 8.导出excel到modified路径
 			try (FileOutputStream out = new FileOutputStream(modifiedFilePath)) {
 				workbook.write(out);
 			}
@@ -350,6 +376,91 @@ public class test0409_01 {
         } catch (IOException e) {
             e.printStackTrace();
         }
+	}
+
+	/*   ----- 公式用数组创建 -----
+	 *    For day m tol :日本现金场合 jpXmoneyList
+	 *    For m1        :日本JCB场合 jcbList
+	 *    For m2        :4.国内信用卡1 }
+	 *                   5.国内信用卡2 } → chTzList 
+	 *                   6.花呗白条等  }
+	 *    For m3        :收入 日本收入的场合 jpInmoneyList
+	 *    For m4        :支出 3.国内现金 chXmoneyList
+	 *                   收入 国内收入的场合 chInmoneyList
+	 *    For Diff      :累加对象的场合 isSumRecordList
+	 *   ----- 公式用数组创建 -----
+	 */
+	static void writeFormulaToRow(XSSFSheet sheet,Integer rowIndex,
+			List<String> jpXmoneyList,List<String> jcbList,List<String> chTzList,
+			List<String> jpInmoneyList,List<String> chXmoneyList,List<String> chInmoneyList,
+			List<String> isSumRecordList) {
+		Row row = sheet.getRow(rowIndex);
+		
+		String strjpXmoneyList = transListToStringFormula(jpXmoneyList);
+        String strjcbList = transListToStringFormula(jcbList);
+        String strchTzList = transListToStringFormula(chTzList);
+        String strjpInmoneyList = transListToStringFormula(jpInmoneyList);
+        String strchXmoneyList = transListToStringFormula(chXmoneyList);
+        String strchInmoneyList = transListToStringFormula(chInmoneyList);
+        String strisSumRecordList = transListToStringFormula(isSumRecordList);
+		
+        // For day m tol :日本现金场合
+		writeFormulaToCell(row, 5, strjpXmoneyList);
+		// For Diff
+		writeFormulaToCell(row, 6, ("E" + (rowIndex + 1)) + "-" + strisSumRecordList);
+		// For m1  上一行的m1 + 当日JCB付款
+		writeFormulaToCell(row, 14, ("O" + (rowIndex)) + "+" + strjcbList);
+		// For m2  上一行的m2 + 当日国内信用卡等付款
+		writeFormulaToCell(row, 15, ("P" + (rowIndex)) + "+" + strchTzList);
+		// For m3  上一行的m3 - 当日日本花费 + 当日日本入账
+		writeFormulaToCell(row, 16, ("Q" + (rowIndex)) + "-" +
+									("F" + (rowIndex + 1)) + "+" +
+									strjpInmoneyList);
+		// For m4  上一行的m4 - 当日国内现金花费 + 当日国内入账
+		writeFormulaToCell(row, 17, ("R" + (rowIndex)) + "-" + 
+									strchXmoneyList + "+" + 
+									strchInmoneyList);		
+		
+	}
+	
+	static void writeFormulaToCell(Row row,Integer columnIndex, String value) {
+		if(row.getCell(columnIndex) == null) {
+			row.createCell(columnIndex).setCellFormula(value);
+		} else {
+			row.getCell(columnIndex).setCellFormula(value);
+		}
+	}
+
+    // 7.上记6中合并的单元格中，写入对应公式
+	/*   ----- 公式用数组创建 -----
+	 *    For day m tol :日本现金场合 jpXmoneyList
+	 *    For m1        :日本JCB场合 jcbList
+	 *    For m2        :4.国内信用卡1 }
+	 *                   5.国内信用卡2 } → chTzList 
+	 *                   6.花呗白条等  }
+	 *    For m3        :收入 日本收入的场合 jpInmoneyList
+	 *    For m4        :支出 3.国内现金 chXmoneyList
+	 *                   收入 国内收入的场合 chInmoneyList
+	 *    For Diff      :累加对象的场合 isSumRecordList
+	 *   ----- 公式用数组创建 -----
+	 */
+	static String transListToStringFormula(List<String> moneyList) {
+		StringBuilder strReturn = new StringBuilder();
+		
+		strReturn = strReturn.append("(");
+		
+		for(int i = 0; i<moneyList.size(); i++) {
+			
+			strReturn = strReturn.append(moneyList.get(i));
+			
+			if(i != moneyList.size() - 1) {
+				strReturn = strReturn.append("+");
+			}
+		}
+		
+		strReturn = strReturn.append(")");
+		
+		return strReturn.toString();
 	}
 
   	 /* 6.单元格合并

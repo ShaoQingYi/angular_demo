@@ -1,0 +1,83 @@
+package test0409;
+
+public class mockData {
+
+	private boolean inOrOut;
+    private String writeTime;
+    private String costName;
+    private Integer costMoney;
+    private String costType;
+    private String payMethod;
+    private boolean isDifferenceObject;
+    private String memo;
+    private String incomeName;
+    private Integer incomeMoney;
+    private String incomeType;
+
+    public boolean isInOrOut() {
+		return inOrOut;
+	}
+	public void setInOrOut(boolean inOrOut) {
+		this.inOrOut = inOrOut;
+	}
+	public String getWriteTime() {
+		return writeTime;
+	}
+	public void setWriteTime(String writeTime) {
+		this.writeTime = writeTime;
+	}
+	public String getCostName() {
+		return costName;
+	}
+	public void setCostName(String costName) {
+		this.costName = costName;
+	}
+	public Integer getCostMoney() {
+		return costMoney;
+	}
+	public void setCostMoney(Integer costMoney) {
+		this.costMoney = costMoney;
+	}
+	public String getCostType() {
+		return costType;
+	}
+	public void setCostType(String costType) {
+		this.costType = costType;
+	}
+	public String getPayMethod() {
+		return payMethod;
+	}
+	public void setPayMethod(String payMethod) {
+		this.payMethod = payMethod;
+	}
+	public boolean isDifferenceObject() {
+		return isDifferenceObject;
+	}
+	public void setDifferenceObject(boolean isDifferenceObject) {
+		this.isDifferenceObject = isDifferenceObject;
+	}
+	public String getMemo() {
+		return memo;
+	}
+	public void setMemo(String memo) {
+		this.memo = memo;
+	}
+	public String getIncomeName() {
+		return incomeName;
+	}
+	public void setIncomeName(String incomeName) {
+		this.incomeName = incomeName;
+	}
+	public Integer getIncomeMoney() {
+		return incomeMoney;
+	}
+	public void setIncomeMoney(Integer incomeMoney) {
+		this.incomeMoney = incomeMoney;
+	}
+	public String getIncomeType() {
+		return incomeType;
+	}
+	public void setIncomeType(String incomeType) {
+		this.incomeType = incomeType;
+	}
+}

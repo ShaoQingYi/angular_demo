@@ -1,0 +1,45 @@
+package test0409;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
+
+public class ExcelUtils {
+
+	private static void copyRowStyle(Row sourceRow, Row targetRow) {
+		// 复制行样式的代码（如果需要）
+	}
+
+	private static void copyCell(Cell sourceCell, Cell targetCell) {
+		if (sourceCell != null) {
+			CellStyle style = sourceCell.getCellStyle();
+			setCellValue(sourceCell, targetCell);
+			if (style != null) {
+				targetCell.setCellStyle(style);
+			}
+		}
+	}
+
+	private static void setCellValue(Cell sourceCell, Cell targetCell) {
+		switch (sourceCell.getCellTypeEnum()) {
+		case STRING:
+			targetCell.setCellValue(sourceCell.getStringCellValue());
+			break;
+		case NUMERIC:
+			targetCell.setCellValue(sourceCell.getNumericCellValue());
+			break;
+		case BOOLEAN:
+			targetCell.setCellValue(sourceCell.getBooleanCellValue());
+			break;
+		case FORMULA:
+			targetCell.setCellFormula(sourceCell.getCellFormula());
+			break;
+		case BLANK:
+			// 如果需要，设置为BLANK
+			break;
+		case ERROR:
+			targetCell.setCellErrorValue(sourceCell.getErrorCellValue());
+			break;
+		}
+	}
+}

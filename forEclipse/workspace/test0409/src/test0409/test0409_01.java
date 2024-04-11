@@ -100,13 +100,26 @@ public class test0409_01 {
             int colIndex = 0;
             
             int startWriteRowIndex = 0;
+            int startWriteRowIndexForCHout = 0;
+            int startWriteRowIndexForIncome = 0;
             int insertRowIndex = 0;
             int insertRowCounts = 0;
             
-            int inOrOut_in_count = (int)mockDataList.stream().filter(obj -> obj.getCostMoney() != 0).count();
-            int inOrOut_out_count = (int)mockDataList.stream().filter(obj -> obj.getIncomeMoney() != 0).count();
+            // 入账件数
+            int inOrOut_in_count = (int)mockDataList.stream().filter(obj -> obj.getIncomeMoney() != 0).count();
+            // 日本花销件数
+            int inOrOut_out_Jp_count = (int)mockDataList.stream()
+            		.filter(obj -> obj.getCostMoney() != 0)
+            		.filter(obj -> obj.getPayMethod() == "1" || obj.getPayMethod() == "2")
+            		.count();
+            // 国内花销件数
+            int inOrOut_out_Ch_count = (int)mockDataList.stream()
+            		.filter(obj -> obj.getCostMoney() != 0)
+            		.filter(obj -> obj.getPayMethod() != "1" && obj.getPayMethod() != "2")
+            		.count();
             
-			insertRowCounts = inOrOut_in_count > inOrOut_out_count ? inOrOut_in_count : inOrOut_out_count;
+            int temp_insertRowCounts = inOrOut_in_count > inOrOut_out_Jp_count ? inOrOut_in_count : inOrOut_out_Jp_count;
+			insertRowCounts = temp_insertRowCounts > inOrOut_out_Ch_count ? temp_insertRowCounts : inOrOut_out_Ch_count;
 			
 			boolean isFirstRecord = true;
 			
@@ -160,6 +173,8 @@ public class test0409_01 {
                             // 记录对象匹配excel日期第一条
                             if (writeTime.equals(cellValue)) {
                             	startWriteRowIndex = row.getRowNum();
+								startWriteRowIndexForCHout = startWriteRowIndex;
+								startWriteRowIndexForIncome = startWriteRowIndex;
                             	break;
                             }
                     	}
@@ -188,6 +203,7 @@ public class test0409_01 {
                 Row row = sheet.getRow(startWriteRowIndex);
                 
                 // 支出的场合 costMoney > 0
+
                 if(costMoney > 0) {
                 	// 日本支出的场合 costType in {1.日本现金 2.JCB信用卡}
                 	if (payMethod=="1" || payMethod=="2") {
@@ -247,6 +263,9 @@ public class test0409_01 {
 //	            		row.getCell(11).setCellValue(costName);
 //	            		row.getCell(12).setCellValue(costMoney);
 //	            		row.getCell(13).setCellValue(payMethod);
+                		
+                		// 重新获取第一行，因为income也要从第一行开始记录
+                		row = sheet.getRow(startWriteRowIndexForCHout);
 	            		
 	            		setCellValue(row,11,costName);
                 		setCellValue(row,12,costMoney);
@@ -254,11 +273,13 @@ public class test0409_01 {
 	            		
 	            		//  [3.国内现金]的场合
 	            		if(payMethod == "3") {
-	            			chXmoneyList.add("M" + startWriteRowIndex);
+	            			chXmoneyList.add("M" + startWriteRowIndexForCHout);
 	            		}else {
 	            			// [4.国内信用卡1 5.国内信用卡2 6.花呗白条等]的场合
-	            			chTzList.add("M" + startWriteRowIndex);
+	            			chTzList.add("M" + startWriteRowIndexForCHout);
 	            		}
+	            		
+	            		startWriteRowIndexForCHout++;
                 	}
                 	
                 } else {
@@ -275,17 +296,22 @@ public class test0409_01 {
 	            	 * 			chInmoneyList.add [I] + RowIndex
 	            	 */
                 	
+                	// 重新获取第一行，因为income也要从第一行开始记录
+            		row = sheet.getRow(startWriteRowIndexForIncome);
+                	
                 	setCellValue(row,7,incomeName);
             		setCellValue(row,8,incomeMoney);
             		setCellValue(row,9,incomeType);
             		
             		// 日本收入的场合 incomeType in {1.日本工资}
             		if(incomeType == "1") {
-            			jpInmoneyList.add("I" + startWriteRowIndex);
+            			jpInmoneyList.add("I" + startWriteRowIndexForIncome);
             		}else {
             			// 国内收入的场合 incomeType not in {1.日本工资}
-            			chInmoneyList.add("I" + startWriteRowIndex);
+            			chInmoneyList.add("I" + startWriteRowIndexForIncome);
             		}
+            		
+            		startWriteRowIndexForIncome++;
                 }
                 
                 
@@ -293,6 +319,18 @@ public class test0409_01 {
                 
                 System.out.println(startWriteRowIndex);
             }
+            
+	       	 /* 6.单元格合并
+	    	 *   3000       E列合并
+	    	 *   day m tol  F列合并
+	    	 *   diff       G列合并
+	    	 *   m1         O列合并
+	    	 *   m2         P列合并
+	    	 *   m3         Q列合并
+	    	 *   m4         R列合并
+	    	 *   
+	    	  *       ※ 合并行数为当日对象行数
+	    	 */
             
 			// 将修改后的工作簿写入文件
 			try (FileOutputStream out = new FileOutputStream(modifiedFilePath)) {
@@ -391,19 +429,39 @@ public class test0409_01 {
 	static List<mockData> makeMockData() {
 		List<mockData> mockDataList = new ArrayList<mockData>();
 
+
 		mockData mockData1 = new mockData(true, "2024/4/1", "morningFD1", 501, "10", "1", true, "memotest",
-				"incomeName1", 900, "1");
+				"incomeName1", 0, "1");
 		mockData mockData2 = new mockData(false, "2024/4/1", "morningFD2", 502, "11", "2", true, "memotest",
-				"incomeName2", 900, "1");
+				"incomeName2", 0, "1");
+		mockData mockData11 = new mockData(true, "2024/4/1", "morningFD1", 501, "10", "1", true, "memotest",
+				"incomeName11", 0, "1");
+		mockData mockData22 = new mockData(false, "2024/4/1", "morningFD2", 502, "11", "2", true, "memotest",
+				"incomeName22", 0, "1");
+		
 		mockData mockData3 = new mockData(true, "2024/4/1", "morningFD3", 503, "1", "3", false, "memotest",
-				"incomeName3", 900, "1");
+				"incomeName3", 0, "1");
 		mockData mockData4 = new mockData(true, "2024/4/1", "morningFD4", 504, "1", "4", true, "memotest",
-				"incomeName4", 900, "1");
+				"incomeName4", 0, "1");
+		
+		mockData mockData5 = new mockData(true, "2024/4/1", "morningFD4", 0, "1", "4", true, "memotest",
+				"incomeName5", 70000, "1");
+		mockData mockData6 = new mockData(true, "2024/4/1", "morningFD4", 0, "1", "4", true, "memotest",
+				"incomeName6", 50000, "2");
+		mockData mockData7 = new mockData(true, "2024/4/1", "morningFD4", 0, "1", "4", true, "memotest",
+				"incomeName7", 150000, "3");
 
 		mockDataList.add(mockData1);
 		mockDataList.add(mockData2);
+		mockDataList.add(mockData11);
+		mockDataList.add(mockData22);
+		
 		mockDataList.add(mockData3);
 		mockDataList.add(mockData4);
+		
+		mockDataList.add(mockData5);
+		mockDataList.add(mockData6);
+		mockDataList.add(mockData7);
 
 		return mockDataList;
 	}

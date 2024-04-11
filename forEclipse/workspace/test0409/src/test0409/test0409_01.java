@@ -10,6 +10,7 @@ import java.util.List;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -102,6 +103,8 @@ public class test0409_01 {
             int startWriteRowIndex = 0;
             int startWriteRowIndexForCHout = 0;
             int startWriteRowIndexForIncome = 0;
+            int startWriteRowIndexBefore_forStep6 = 0;
+            
             int insertRowIndex = 0;
             int insertRowCounts = 0;
             
@@ -175,6 +178,7 @@ public class test0409_01 {
                             	startWriteRowIndex = row.getRowNum();
 								startWriteRowIndexForCHout = startWriteRowIndex;
 								startWriteRowIndexForIncome = startWriteRowIndex;
+								startWriteRowIndexBefore_forStep6 = startWriteRowIndex;
                             	break;
                             }
                     	}
@@ -328,9 +332,14 @@ public class test0409_01 {
 	    	 *   m2         P列合并
 	    	 *   m3         Q列合并
 	    	 *   m4         R列合并
+	    	 *   memo       S列合并
 	    	 *   
 	    	  *       ※ 合并行数为当日对象行数
 	    	 */
+             mergedRegion(sheet,
+            		 startWriteRowIndexBefore_forStep6,
+            		 startWriteRowIndexBefore_forStep6+insertRowCounts-1);
+            
             
 			// 将修改后的工作簿写入文件
 			try (FileOutputStream out = new FileOutputStream(modifiedFilePath)) {
@@ -341,6 +350,43 @@ public class test0409_01 {
         } catch (IOException e) {
             e.printStackTrace();
         }
+	}
+
+  	 /* 6.单元格合并
+	 *   3000       E列合并
+	 *   day m tol  F列合并
+	 *   diff       G列合并
+	 *   m1         O列合并
+	 *   m2         P列合并
+	 *   m3         Q列合并
+	 *   m4         R列合并
+	 *   memo       S列合并
+	 *   
+	  *       ※ 合并行数为当日对象行数
+	 */
+	static void mergedRegion(XSSFSheet sheet, int firstRow, int lastRow) {
+		// 3000 E列合并
+        mergedRegion(sheet, firstRow, lastRow, 4, 4);
+        // day m tol  F列合并
+        mergedRegion(sheet, firstRow, lastRow, 5, 5);
+        // diff       G列合并
+        mergedRegion(sheet, firstRow, lastRow, 6, 6);
+        
+        // m1         O列合并
+        mergedRegion(sheet, firstRow, lastRow, 14, 14);
+        // m2         P列合并
+        mergedRegion(sheet, firstRow, lastRow, 15, 15);
+        // m3         Q列合并
+        mergedRegion(sheet, firstRow, lastRow, 16, 16);
+        // m4         R列合并
+        mergedRegion(sheet, firstRow, lastRow, 17, 17);
+        
+        // memo       S列合并
+        mergedRegion(sheet, firstRow, lastRow, 18, 18);
+	}
+	
+	static void mergedRegion(XSSFSheet sheet, int firstRow, int lastRow, int firstColumn, int lastColumn) {
+		sheet.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstColumn, lastColumn));
 	}
 	
 	static void setCellValue(Row row,Integer columnIndex, String value) {

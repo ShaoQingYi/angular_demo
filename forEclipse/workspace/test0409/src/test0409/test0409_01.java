@@ -4,10 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -89,12 +92,23 @@ public class test0409_01 {
 
 		List<mockData> mockDataList = makeMockData();
 		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        String timestamp = sdf.format(new Date());
+		
 		// TODO
 		String excelFilePath = "C:\\Users\\INNOX-002\\Desktop\\shao\\forEclipse\\workspace\\test.xlsx";
-		String modifiedFilePath = "C:\\Users\\INNOX-002\\Desktop\\shao\\forEclipse\\workspace\\test_modified.xlsx";
+		String bk_excelFilePath = String.format(
+				"C:\\Users\\INNOX-002\\Desktop\\shao\\forEclipse\\workspace\\test_%s_bk.xlsx", timestamp);
+//		String modifiedFilePath = "C:\\Users\\INNOX-002\\Desktop\\shao\\forEclipse\\workspace\\test_modified.xlsx";
+		
 		 
         try (FileInputStream fileInputStream = new FileInputStream(new File(excelFilePath));
         	XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream)) {
+        	
+        	// 实行前备份excel
+			try (FileOutputStream out = new FileOutputStream(bk_excelFilePath)) {
+				workbook.write(out);
+			}
         	
             XSSFSheet sheet = workbook.getSheetAt(0);
  
@@ -104,8 +118,7 @@ public class test0409_01 {
             int startWriteRowIndexForCHout = 0;
             int startWriteRowIndexForIncome = 0;
             int startWriteRowIndexBefore_forStep6 = 0;
-            
-            int insertRowIndex = 0;
+
             int insertRowCounts = 0;
             
             // 入账件数
@@ -190,6 +203,18 @@ public class test0409_01 {
                     // 删除当日既存旧数据
                 	deleteOldRows(sheet, startWriteRowIndex, writeTime);
                 	
+                	// 清除第一行所有
+                	setCellValue(sheet.getRow(startWriteRowIndex), 1, "");
+                	setCellValue(sheet.getRow(startWriteRowIndex), 2, "");
+                	setCellValue(sheet.getRow(startWriteRowIndex), 3, "");
+                	setCellValue(sheet.getRow(startWriteRowIndex), 7, "");
+                	setCellValue(sheet.getRow(startWriteRowIndex), 8, "");
+                	setCellValue(sheet.getRow(startWriteRowIndex), 9, "");
+                	setCellValue(sheet.getRow(startWriteRowIndex), 10, "");
+                	setCellValue(sheet.getRow(startWriteRowIndex), 11, "");
+                	setCellValue(sheet.getRow(startWriteRowIndex), 12, "");
+                	setCellValue(sheet.getRow(startWriteRowIndex), 13, "");
+                	
                 	// 插入当日对象行数
                 	insertNewRows(sheet, startWriteRowIndex, insertRowCounts - 1);
                 	
@@ -222,9 +247,6 @@ public class test0409_01 {
                 		setCellValue(row,1,costName);
                 		setCellValue(row,2,costMoney);
                 		setCellValue(row,3,costType);
-//                		row.getCell(1).setCellValue(costName);
-//                		row.getCell(2).setCellValue(costMoney);
-//                		row.getCell(3).setCellValue(costType);
                 		
                 		 /* 日本现金的场合
                 		 * 	  jpXmoneyList.add [C] + RowIndex
@@ -267,9 +289,6 @@ public class test0409_01 {
 	           		     * 	  costMoney → [M] + RowIndex
 	           		     *    payMethod  → [N] + RowIndex
 	           		     */
-//	            		row.getCell(11).setCellValue(costName);
-//	            		row.getCell(12).setCellValue(costMoney);
-//	            		row.getCell(13).setCellValue(payMethod);
                 		
                 		// 重新获取第一行，因为income也要从第一行开始记录
                 		row = sheet.getRow(startWriteRowIndexForCHout);
@@ -368,7 +387,10 @@ public class test0409_01 {
              sheet.setForceFormulaRecalculation(true);
              
 			// 8.导出excel到modified路径
-			try (FileOutputStream out = new FileOutputStream(modifiedFilePath)) {
+//			try (FileOutputStream out = new FileOutputStream(modifiedFilePath)) {
+//				workbook.write(out);
+//			}
+			try (FileOutputStream out = new FileOutputStream(excelFilePath)) {
 				workbook.write(out);
 			}
 			
@@ -476,6 +498,10 @@ public class test0409_01 {
 	  *       ※ 合并行数为当日对象行数
 	 */
 	static void mergedRegion(XSSFSheet sheet, int firstRow, int lastRow) {
+		
+		// 先清除所有合并
+		cancleAllMergedRegion(sheet,firstRow);
+		
 		// 3000 E列合并
         mergedRegion(sheet, firstRow, lastRow, 4, 4);
         // day m tol  F列合并
@@ -497,7 +523,40 @@ public class test0409_01 {
 	}
 	
 	static void mergedRegion(XSSFSheet sheet, int firstRow, int lastRow, int firstColumn, int lastColumn) {
-		sheet.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstColumn, lastColumn));
+//		Row row = sheet.getRow(firstRow);
+//		
+//		Cell cell = row.getCell(firstColumn);
+//		
+//		CellStyle style = cell.getCellStyle();
+//        if (!(style.getIndention() > 0)) {
+//        	sheet.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstColumn, lastColumn));
+//        }
+        
+        sheet.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstColumn, lastColumn));
+	}
+	
+	static void cancleAllMergedRegion(XSSFSheet sheet, Integer rowIndex) {
+		cancleMergedRegion(sheet,rowIndex,4);
+		cancleMergedRegion(sheet,rowIndex,5);
+		cancleMergedRegion(sheet,rowIndex,6);
+		
+		cancleMergedRegion(sheet,rowIndex,14);
+		cancleMergedRegion(sheet,rowIndex,15);
+		cancleMergedRegion(sheet,rowIndex,16);
+		cancleMergedRegion(sheet,rowIndex,17);
+		
+		cancleMergedRegion(sheet,rowIndex,18);
+	}
+	
+	static void cancleMergedRegion(XSSFSheet sheet, Integer rowIndex, Integer columnIndex) {
+		int mergedRegionsCount = sheet.getNumMergedRegions();
+        for (int i = 0; i < mergedRegionsCount; i++) {
+            CellRangeAddress cellRangeAddress = sheet.getMergedRegion(i);
+            if (cellRangeAddress.getFirstRow() == rowIndex && cellRangeAddress.getFirstColumn() == columnIndex) {
+                sheet.removeMergedRegion(i);
+                break;
+            }
+        }
 	}
 	
 	static void setCellValue(Row row,Integer columnIndex, String value) {

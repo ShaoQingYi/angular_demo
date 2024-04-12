@@ -713,40 +713,74 @@ public class test0409_01 {
 	static List<mockData> makeMockData() {
 		List<mockData> mockDataList = new ArrayList<mockData>();
 
-
-		mockData mockData1 = new mockData(true, "2024/4/1", "morningFD1", 501, "10", "1", true, "memotest",
-				"incomeName1", 0, "1");
-		mockData mockData2 = new mockData(false, "2024/4/1", "morningFD2", 502, "11", "2", true, "memotest",
-				"incomeName2", 0, "1");
-		mockData mockData11 = new mockData(true, "2024/4/1", "morningFD1", 501, "10", "1", true, "memotest",
-				"incomeName11", 0, "1");
-		mockData mockData22 = new mockData(false, "2024/4/1", "morningFD2", 502, "11", "2", true, "memotest",
-				"incomeName22", 0, "1");
+		// 日本花销 JCB 2
+		mockData mockData1 = new mockData(true, "2024/4/1", "早饭面包JCB付款", 265, "1", "2", true, "早饭",
+				"", 0, "");
+		// 日本花销 日本现金 1
+		mockData mockData2 = new mockData(true, "2024/4/1", "买东西 日本现金", 501, "10", "1", true, "累加对象",
+				"", 0, "");
+		// 日本花销 日本现金 1 非累计对象
+		mockData mockData3 = new mockData(true, "2024/4/1", "旅游门票", 502, "10", "1", false, "非累加对象日本现金2",
+				"", 0, "");
+		// 日本花销 日本现金 1
+		mockData mockData4 = new mockData(true, "2024/4/1", "晚饭", 1000, "10", "1", true, "晚饭日本现金",
+				"", 0, "");
+		// 日本花销 JCB 2
+		mockData mockData5 = new mockData(true, "2024/4/1", "亚马逊买水JCB付款", 3000, "6", "2", true, "亚马逊买水",
+				"", 0, "");
+		// 国内花销 媳妇国内信用卡 3
+		mockData mockData6 = new mockData(true, "2024/4/1", "西瓜卡充值 国内信用卡付款", 200, "10", "3", true, "媳妇国内信用卡",
+				"", 0, "");
+		// 国内花销 邵国内信用卡 4
+		mockData mockData7 = new mockData(true, "2024/4/1", "买了个华为 邵国内信用卡付款", 500, "11", "4", true, "邵国内信用卡买手机",
+				"", 0, "");
+		// 国内花销 国内现金 5
+		mockData mockData8 = new mockData(true, "2024/4/1", "交五险用的国内现金", 3500, "10", "5", true, "五险",
+				"", 0, "");
+		// 国内花销 花呗白条等 6
+		mockData mockData9 = new mockData(true, "2024/4/1", "花呗交了个话费", 30, "11", "6", true, "话费",
+				"", 0, "");
 		
-		mockData mockData3 = new mockData(true, "2024/4/1", "morningFD3", 503, "1", "3", false, "memotest",
-				"incomeName3", 0, "1");
-		mockData mockData4 = new mockData(true, "2024/4/1", "morningFD4", 504, "1", "4", true, "memotest",
-				"incomeName4", 0, "1");
+		// 日本收入 日本工资 1
+		mockData mockData10 = new mockData(false, "2024/4/1", "", 0, "", "", true, "四月工资",
+				"日本发工资", 5000, "1");
+		// 国内收入 兼职 2
+		mockData mockData11 = new mockData(false, "2024/4/1", "", 0, "", "", true, "兼职工资",
+				"日本兼职", 1000, "2");
+		// 国内收入 红包转账等 3
+		mockData mockData12 = new mockData(false, "2024/4/1", "", 0, "", "", false, "收的红包",
+				"生日红包入账", 2000, "3");
+		// 国内收入 日本送金国内入账 4
+		mockData mockData13 = new mockData(false, "2024/4/1", "", 0, "", "", true, "日本送金入账",
+				"日本送金国内入账～", 20000, "4");
+		// 国内收入 国内住房补贴 5
+		mockData mockData14 = new mockData(false, "2024/4/1", "", 0, "", "", true, "四月住房补贴大连",
+				"国内住房补贴", 1000, "5");
+		// 国内收入 其它 6
+		mockData mockData15 = new mockData(false, "2024/4/1", "", 0, "", "", true, "闲鱼卖货收入",
+				"闲鱼收入", 500, "6");
 		
-		mockData mockData5 = new mockData(true, "2024/4/1", "morningFD4", 0, "1", "4", true, "memotest",
-				"incomeName5", 70000, "1");
-		mockData mockData6 = new mockData(true, "2024/4/1", "morningFD4", 0, "1", "4", true, "memotest",
-				"incomeName6", 50000, "2");
-		mockData mockData7 = new mockData(true, "2024/4/1", "morningFD4", 0, "1", "4", true, "memotest",
-				"incomeName7", 150000, "3");
-
 		mockDataList.add(mockData1);
 		mockDataList.add(mockData2);
-		mockDataList.add(mockData11);
-		mockDataList.add(mockData22);
 		
 		mockDataList.add(mockData3);
 		mockDataList.add(mockData4);
 		
 		mockDataList.add(mockData5);
 		mockDataList.add(mockData6);
-		mockDataList.add(mockData7);
 
+		mockDataList.add(mockData7);
+		mockDataList.add(mockData8);
+		
+		mockDataList.add(mockData9);
+		mockDataList.add(mockData10);
+		
+		mockDataList.add(mockData11);
+		mockDataList.add(mockData12);
+		mockDataList.add(mockData13);
+		mockDataList.add(mockData14);
+		mockDataList.add(mockData15);
+		
 		return mockDataList;
 	}
 

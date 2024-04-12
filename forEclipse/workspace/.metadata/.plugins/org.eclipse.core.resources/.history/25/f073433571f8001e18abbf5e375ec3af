@@ -1,0 +1,45 @@
+package test0409;
+
+public class getTypeUtils {
+
+	static String getType(String type, String code) {
+		String returnType = "";
+		
+		switch (type) {
+			case "costType":
+				
+				switch(code) {
+					case "1":
+						break;
+				}
+				
+				
+				break;
+			case "payMethod":
+				
+				switch(code) {
+					case "1":
+						break;
+				}
+				
+				
+				break;
+			case "incomeType":
+				
+				switch(code) {
+					case "1":
+						break;
+				}
+				
+				
+				break;
+		
+		}
+		
+		
+		
+		
+		return returnType;
+	}
+	
+}

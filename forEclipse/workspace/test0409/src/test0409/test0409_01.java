@@ -10,7 +10,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -98,8 +97,7 @@ public class test0409_01 {
 		// TODO
 		String excelFilePath = "C:\\Users\\INNOX-002\\Desktop\\shao\\forEclipse\\workspace\\test.xlsx";
 		String bk_excelFilePath = String.format(
-				"C:\\Users\\INNOX-002\\Desktop\\shao\\forEclipse\\workspace\\test_%s_bk.xlsx", timestamp);
-//		String modifiedFilePath = "C:\\Users\\INNOX-002\\Desktop\\shao\\forEclipse\\workspace\\test_modified.xlsx";
+				"C:\\Users\\INNOX-002\\Desktop\\shao\\forEclipse\\workspace\\tool_bk\\test_%s_bk.xlsx", timestamp);
 		
 		 
         try (FileInputStream fileInputStream = new FileInputStream(new File(excelFilePath));
@@ -139,10 +137,71 @@ public class test0409_01 {
 			
 			boolean isFirstRecord = true;
 			
-			// TODO
+			// 当日无花销时
 			if (mockDataList.isEmpty()) {
 				// TODO
+				// 后来替换这个为参数，batch执行时选择的天数
+				String writeTime = "2024/4/1";
 				
+                // 遍历行
+                for (Row row : sheet) {
+                	Cell cell = row.getCell(colIndex);
+                	
+                	if (cell != null) {
+                		// 获取单元格数据
+                		cell.setCellType(CellType.STRING);
+                		
+                        String cellValue = cell.getStringCellValue();
+                        
+                        // 记录对象匹配excel日期第一条
+                        if (writeTime.equals(cellValue)) {
+                        	startWriteRowIndex = row.getRowNum();
+                        	break;
+                        }
+                	}
+                }
+                
+                // 先清除所有合并
+        		cancleAllMergedRegion(sheet,startWriteRowIndex);
+            	
+                // 删除当日既存旧数据
+            	deleteOldRows(sheet, startWriteRowIndex, writeTime);
+            	
+            	// 清除第一行所有
+            	setCellValue(sheet.getRow(startWriteRowIndex), 1, "无花销");
+            	setCellValue(sheet.getRow(startWriteRowIndex), 2, "");
+            	setCellValue(sheet.getRow(startWriteRowIndex), 3, "");
+            	setCellValue(sheet.getRow(startWriteRowIndex), 5, "0");
+            	writeFormulaToCell(sheet.getRow(startWriteRowIndex), 5, "0");
+            	
+            	writeFormulaToCell(sheet.getRow(startWriteRowIndex), 6,
+            			("E" + (startWriteRowIndex + 1)) + "-" + ("F" + (startWriteRowIndex + 1)));
+            	setCellValue(sheet.getRow(startWriteRowIndex), 7, "");
+            	setCellValue(sheet.getRow(startWriteRowIndex), 8, "");
+            	setCellValue(sheet.getRow(startWriteRowIndex), 9, "");
+            	setCellValue(sheet.getRow(startWriteRowIndex), 10, "");
+            	setCellValue(sheet.getRow(startWriteRowIndex), 11, "");
+            	setCellValue(sheet.getRow(startWriteRowIndex), 12, "");
+            	setCellValue(sheet.getRow(startWriteRowIndex), 13, "");
+				
+            	writeFormulaToCell(sheet.getRow(startWriteRowIndex), 14,
+            			("O" + startWriteRowIndex));
+            	writeFormulaToCell(sheet.getRow(startWriteRowIndex), 15,
+            			("P" + startWriteRowIndex));
+            	writeFormulaToCell(sheet.getRow(startWriteRowIndex), 16,
+            			("Q" + startWriteRowIndex));
+            	writeFormulaToCell(sheet.getRow(startWriteRowIndex), 17,
+            			("R" + startWriteRowIndex));
+            	
+            	setCellValue(sheet.getRow(startWriteRowIndex), 18, "");
+            	
+            	// 强制公式生效，不然tool写入的公式需要点击一下cell才生效
+                sheet.setForceFormulaRecalculation(true);
+
+				try (FileOutputStream out = new FileOutputStream(excelFilePath)) {
+					workbook.write(out);
+				}
+            	
 				return;
 			}
 
@@ -237,8 +296,8 @@ public class test0409_01 {
                 // 支出的场合 costMoney > 0
 
                 if(costMoney > 0) {
-                	// 日本支出的场合 costType in {1.日本现金 2.JCB信用卡}
-                	if (payMethod=="1" || payMethod=="2") {
+                	// 日本支出的场合 payMethod in {1.日本现金 2.JCB信用卡}
+                	if (payMethod == "1" || payMethod == "2") {
                 		/*
                 		 * 	costName  → [B] + RowIndex
                 		 *  costMoney → [C] + RowIndex
@@ -246,7 +305,8 @@ public class test0409_01 {
                 		 */
                 		setCellValue(row,1,costName);
                 		setCellValue(row,2,costMoney);
-                		setCellValue(row,3,costType);
+//                		setCellValue(row,3,costType);
+                		setCellValue(row,3,getTypeUtils.getType("costType", costType));
                 		
                 		 /* 日本现金的场合
                 		 * 	  jpXmoneyList.add [C] + RowIndex
@@ -295,10 +355,11 @@ public class test0409_01 {
 	            		
 	            		setCellValue(row,11,costName);
                 		setCellValue(row,12,costMoney);
-                		setCellValue(row,13,payMethod);
+//                		setCellValue(row,13,payMethod);
+                		setCellValue(row,13,getTypeUtils.getType("payMethod", payMethod));
 	            		
 	            		//  [3.国内现金]的场合
-	            		if(payMethod == "3") {
+	            		if(payMethod == "5") {
 	            			chXmoneyList.add("M" + (startWriteRowIndexForCHout + 1));
 	            		}else {
 	            			// [4.国内信用卡1 5.国内信用卡2 6.花呗白条等]的场合
@@ -327,7 +388,8 @@ public class test0409_01 {
                 	
                 	setCellValue(row,7,incomeName);
             		setCellValue(row,8,incomeMoney);
-            		setCellValue(row,9,incomeType);
+//            		setCellValue(row,9,incomeType);
+            		setCellValue(row,9,getTypeUtils.getType("incomeType", incomeType));
             		
             		// 日本收入的场合 incomeType in {1.日本工资}
             		if(incomeType == "1") {
@@ -469,9 +531,13 @@ public class test0409_01 {
 	static String transListToStringFormula(List<String> moneyList) {
 		StringBuilder strReturn = new StringBuilder();
 		
+		if(moneyList.size() == 0) {
+			return "0";
+		}
+		
 		strReturn = strReturn.append("(");
 		
-		for(int i = 0; i<moneyList.size(); i++) {
+		for(int i = 0; i < moneyList.size(); i++) {
 			
 			strReturn = strReturn.append(moneyList.get(i));
 			
@@ -639,7 +705,9 @@ public class test0409_01 {
         	}
         }
         
-		sheet.shiftRows(startWriteRowIndex + blankRowsCount + 1, sheet.getLastRowNum(), -blankRowsCount);
+        if (blankRowsCount != 0) {
+        	sheet.shiftRows(startWriteRowIndex + blankRowsCount + 1, sheet.getLastRowNum(), -blankRowsCount);
+        }
 	}
 	
 	static List<mockData> makeMockData() {

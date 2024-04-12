@@ -1,0 +1,146 @@
+package test0409;
+
+public class getTypeUtils {
+
+	// TODO property文件取入map中重构
+	static String getType(String type, String code) {
+		String returnType = "";
+		
+		switch (type) {
+			case "costType":
+				switch(code) {
+					case "1":
+						returnType = "早饭";
+						break;
+					case "2":
+						returnType = "午饭";
+						break;
+					case "3":
+						returnType = "晚饭";
+						break;
+					case "4":
+						returnType = "蔬菜";
+						break;
+					case "5":
+						returnType = "食材";
+						break;
+					case "6":
+						returnType = "水果";
+						break;
+					case "7":
+						returnType = "矿泉水";
+						break;
+					case "8":
+						returnType = "牛奶";
+						break;
+					case "9":
+						returnType = "零食";
+						break;
+					case "10":
+						returnType = "饮料";
+						break;
+					case "11":
+						returnType = "交通费";
+						break;
+					case "12":
+						returnType = "生活用品";
+						break;
+					case "13":
+						returnType = "剪头发";
+						break;
+					case "14":
+						returnType = "房租";
+						break;
+					case "15":
+						returnType = "水费";
+						break;
+					case "16":
+						returnType = "电费";
+						break;
+					case "17":
+						returnType = "燃气费";
+						break;
+					case "18":
+						returnType = "手机费";
+						break;
+					case "19":
+						returnType = "保险费";
+						break;
+					case "20":
+						returnType = "国内送金";
+						break;
+					case "21":
+						returnType = "服装类";
+						break;
+					case "22":
+						returnType = "医疗类";
+						break;
+					case "23":
+						returnType = "学习类";
+						break;
+					case "24":
+						returnType = "手续费";
+						break;
+					case "25":
+						returnType = "景区门票";
+						break;
+					case "26":
+						returnType = "保健品";
+						break;
+					case "27":
+						returnType = "过年用";
+						break;
+					case "28":
+						returnType = "其它";
+						break;
+					case "29":
+						returnType = "国内花销(车贷)";
+						break;
+					case "30":
+						returnType = "国内花销(五险)";
+						break;
+					case "31":
+						returnType = "国内花销(信用卡)";
+						break;
+					case "32":
+						returnType = "国内花销(其它)";
+						break;
+				}				
+				
+				break;
+			case "payMethod":
+				switch(code) {
+					case "1":
+						returnType = "日本现金";
+						break;
+					case "2":
+						returnType = "JCB信用卡";
+						break;
+					case "3":
+						returnType = "媳妇国内信用卡";
+						break;
+					case "4":
+						returnType = "邵国内信用卡";
+						break;
+					case "5":
+						returnType = "国内现金";
+						break;
+					case "6":
+						returnType = "花呗白条等";
+						break;
+				}
+				
+				break;
+			case "incomeType":
+				switch(code) {
+					case "1":
+						break;
+				}
+				
+				break;
+		}
+		
+		return returnType;
+	}
+	
+}

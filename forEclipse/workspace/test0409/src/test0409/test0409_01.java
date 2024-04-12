@@ -162,7 +162,7 @@ public class test0409_01 extends LogToFile{
 			if (mockDataList.isEmpty()) {
 				// TODO
 				// 后来替换这个为参数，batch执行时选择的天数
-				String writeTime = "2024/4/1";
+				String writeTime = "2024/4/3";
 				
                 // 遍历行
                 for (Row row : sheet) {
@@ -922,8 +922,30 @@ public class test0409_01 extends LogToFile{
 		mockData mockData17 = new mockData(true, "2024/4/2", "买东西 日本现金", 501, "10", "1", true, "累加对象",
 				"", 0, "");
 		
+		// 日本收入 日本工资 1
+		mockData mockData18 = new mockData(false, "2024/4/2", "", 0, "", "", true, "四月工资",
+				"日本发工资", 5000, "1");
+		
 		mockDataList.add(mockData16);
 		mockDataList.add(mockData17);
+		mockDataList.add(mockData18);
+		
+		mockDataList.clear();
+		
+		// 日本花销 JCB 2
+		mockData mockData19 = new mockData(true, "2024/4/4", "早饭面包JCB付款", 265, "1", "2", true, "早饭",
+				"", 0, "");
+		// 日本花销 日本现金 1
+		mockData mockData20 = new mockData(true, "2024/4/4", "买东西 日本现金", 501, "10", "1", true, "累加对象",
+				"", 0, "");
+		
+		// 日本收入 日本工资 1
+		mockData mockData21 = new mockData(false, "2024/4/4", "", 0, "", "", true, "四月工资",
+				"日本发工资", 5000, "1");
+		
+		mockDataList.add(mockData19);
+		mockDataList.add(mockData20);
+		mockDataList.add(mockData21);
 		
 		return mockDataList;
 	}

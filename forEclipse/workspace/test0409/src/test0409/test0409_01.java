@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -542,23 +544,99 @@ public class test0409_01 extends LogToFile{
         String strchInmoneyList = transListToStringFormula(chInmoneyList);
         String strisSumRecordList = transListToStringFormula(isSumRecordList);
 		
+        // 如果上一行是合并单元格，比如上一行是5行合并的 那E10就取不到值，E6才能取到
+        Integer rowIndexForBeforeIsRegion = 0;
+        
+        String previousDayString = get1DayBefore(sheet.getRow(rowIndex).getCell(0).getStringCellValue());
+        
+        // TODO 需要把这个i换成日期计算的起始行
+        for(int i = 4; i < rowIndex; i++) {
+        	Row tempRow = sheet.getRow(i);
+        
+        	if(tempRow == null ||tempRow.getCell(0) == null) {
+        		continue;
+        	} 	
+        	
+        	String nowDate = formatDateForCompare(tempRow.getCell(0).getStringCellValue());
+        	
+        	// 不是日期就直接过滤了
+        	if (nowDate == null || nowDate == "") {
+        		continue;
+        	}
+        	
+        	if(nowDate.equals(previousDayString)) {
+        		rowIndexForBeforeIsRegion = i;
+        		break;
+        	}
+        }
+        
         // For day m tol :日本现金场合
 		writeFormulaToCell(row, 5, strjpXmoneyList);
 		// For Diff
 		writeFormulaToCell(row, 6, ("E" + (rowIndex + 1)) + "-" + strisSumRecordList);
 		// For m1  上一行的m1 + 当日JCB付款
-		writeFormulaToCell(row, 14, ("O" + (rowIndex)) + "+" + strjcbList);
+//		writeFormulaToCell(row, 14, ("O" + (rowIndex)) + "+" + strjcbList);
+		writeFormulaToCell(row, 14, ("O" + (rowIndexForBeforeIsRegion + 1)) + "+" + strjcbList);
 		// For m2  上一行的m2 + 当日国内信用卡等付款
-		writeFormulaToCell(row, 15, ("P" + (rowIndex)) + "+" + strchTzList);
+//		writeFormulaToCell(row, 15, ("P" + (rowIndex)) + "+" + strchTzList);
+		writeFormulaToCell(row, 15, ("P" + (rowIndexForBeforeIsRegion + 1)) + "+" + strchTzList);
 		// For m3  上一行的m3 - 当日日本花费 + 当日日本入账
-		writeFormulaToCell(row, 16, ("Q" + (rowIndex)) + "-" +
+//		writeFormulaToCell(row, 16, ("Q" + (rowIndex)) + "-" +
+//									("F" + (rowIndex + 1)) + "+" +
+//									strjpInmoneyList);
+		writeFormulaToCell(row, 16, ("Q" + (rowIndexForBeforeIsRegion + 1)) + "-" +
 									("F" + (rowIndex + 1)) + "+" +
 									strjpInmoneyList);
 		// For m4  上一行的m4 - 当日国内现金花费 + 当日国内入账
-		writeFormulaToCell(row, 17, ("R" + (rowIndex)) + "-" + 
+//		writeFormulaToCell(row, 17, ("R" + (rowIndex)) + "-" + 
+//									strchXmoneyList + "+" + 
+//									strchInmoneyList);
+		writeFormulaToCell(row, 17, ("R" + (rowIndexForBeforeIsRegion + 1)) + "-" + 
 									strchXmoneyList + "+" + 
-									strchInmoneyList);		
+									strchInmoneyList);	
+	}
+	
+	static String get1DayBefore(String nowDate) {
+		String previousDayString = "";
 		
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
+		Date date;
+		try {
+			date = formatter.parse(nowDate);
+
+			// 转换为Calendar
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(date);
+
+			// 获取前一天
+			calendar.add(Calendar.DATE, -1);
+
+			// 重新格式化为字符串
+			previousDayString = formatter.format(calendar.getTime());
+//			System.out.println("前一天的日期是: " + previousDayString);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return previousDayString;
+	}
+	
+	static String formatDateForCompare(String nowDate) {
+		String previousDayString = "";
+		
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");
+		
+		try {
+			Date date = formatter.parse(nowDate);
+			
+			previousDayString = formatter.format(date);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return previousDayString;
 	}
 	
 	static void writeFormulaToCell(Row row,Integer columnIndex, String value) {
@@ -836,6 +914,16 @@ public class test0409_01 extends LogToFile{
 		mockDataList.add(mockData15);
 		
 		mockDataList.clear();
+		
+		// 日本花销 JCB 2
+		mockData mockData16 = new mockData(true, "2024/4/2", "早饭面包JCB付款", 265, "1", "2", true, "早饭",
+				"", 0, "");
+		// 日本花销 日本现金 1
+		mockData mockData17 = new mockData(true, "2024/4/2", "买东西 日本现金", 501, "10", "1", true, "累加对象",
+				"", 0, "");
+		
+		mockDataList.add(mockData16);
+		mockDataList.add(mockData17);
 		
 		return mockDataList;
 	}

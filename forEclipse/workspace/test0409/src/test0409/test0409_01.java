@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,7 +18,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-public class test0409_01 {
+public class test0409_01 extends LogToFile{
 
 	/* 0.打开excel
 	 * 1.计算日本支出条数和国内支出条数（取大的一个作为插入行数）
@@ -88,8 +90,19 @@ public class test0409_01 {
 	 *
 	 */
 	public static void main(String[] args) {
+		
+		// test
+		initLogger();
+		
+		logger.info(getNowDateTime() + " " + "----- batch start -----");
+		// test
 
+		// 取得当日数据
+		logger.info(getNowDateTime() + " " + "当日对象取得开始");
+		
 		List<mockData> mockDataList = makeMockData();
+		
+		logger.info(getNowDateTime() + " " + "当日对象取得完了");
 		
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         String timestamp = sdf.format(new Date());
@@ -103,10 +116,14 @@ public class test0409_01 {
         try (FileInputStream fileInputStream = new FileInputStream(new File(excelFilePath));
         	XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream)) {
         	
+        	logger.info(getNowDateTime() + " " + "bathc执行前 Excel备份开始");
+        	
         	// 实行前备份excel
 			try (FileOutputStream out = new FileOutputStream(bk_excelFilePath)) {
 				workbook.write(out);
 			}
+			
+			logger.info(getNowDateTime() + " " + "bathc执行前 Excel备份完了");
         	
             XSSFSheet sheet = workbook.getSheetAt(0);
  
@@ -136,6 +153,8 @@ public class test0409_01 {
 			insertRowCounts = temp_insertRowCounts > inOrOut_out_Ch_count ? temp_insertRowCounts : inOrOut_out_Ch_count;
 			
 			boolean isFirstRecord = true;
+			
+			logger.info(getNowDateTime() + " " + "Excel写入开始");
 			
 			// 当日无花销时
 			if (mockDataList.isEmpty()) {
@@ -201,6 +220,16 @@ public class test0409_01 {
 				try (FileOutputStream out = new FileOutputStream(excelFilePath)) {
 					workbook.write(out);
 				}
+				
+				workbook.close();
+				
+				logger.info(getNowDateTime() + " " + "Excel写入完了");
+				
+				logger.info(getNowDateTime() + " " + "当日无花销 一行更新完了");
+				
+				logger.info(getNowDateTime() + " " + "Excel更新完了");
+				
+				logger.info(getNowDateTime() + " " + "----- batch end -----");
             	
 				return;
 			}
@@ -405,10 +434,10 @@ public class test0409_01 {
                 
                 startWriteRowIndex++;
                 
-                System.out.println(startWriteRowIndex);
-                
                 memoSb.append(memo).append("\r\n");
             }
+            
+            logger.info(getNowDateTime() + " " + "Excel写入完了");
             
 	       	 /* 6.单元格合并
 	    	 *   3000       E列合并
@@ -422,9 +451,13 @@ public class test0409_01 {
 	    	 *   
 	    	  *       ※ 合并行数为当日对象行数
 	    	 */
+            logger.info(getNowDateTime() + " " + "单元格合并开始");
+            
              mergedRegion(sheet,
             		 startWriteRowIndexBefore_forStep6,
             		 startWriteRowIndexBefore_forStep6+insertRowCounts-1);
+             
+             logger.info(getNowDateTime() + " " + "单元格合并完了");
             
             // 7.上记6中合并的单元格中，写入对应公式
         	/*   ----- 公式用数组创建 -----
@@ -439,8 +472,12 @@ public class test0409_01 {
         	 *    For Diff      :累加对象的场合 isSumRecordList
         	 *   ----- 公式用数组创建 -----
         	 */
+             logger.info(getNowDateTime() + " " + "自动计算公式写入开始");
+             
              writeFormulaToRow(sheet,startWriteRowIndexBefore_forStep6,
             		 jpXmoneyList,jcbList,chTzList,jpInmoneyList,chXmoneyList,chInmoneyList,isSumRecordList);
+             
+             logger.info(getNowDateTime() + " " + "自动计算公式写入完了");
              
              // 写入memo
              setCellValue(sheet.getRow(startWriteRowIndexBefore_forStep6), 18, memoSb.toString());
@@ -457,9 +494,26 @@ public class test0409_01 {
 			}
 			
 			workbook.close();
+			
+			logger.info(getNowDateTime() + " " + "Excel更新完了");
+			
+			logger.info(getNowDateTime() + " " + "----- batch end -----");
         } catch (IOException e) {
             e.printStackTrace();
         }
+	}
+	
+	static String getNowDateTime() {
+        // 获取当前时间
+        LocalDateTime now = LocalDateTime.now();
+ 
+        // 定义格式化器
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+ 
+        // 使用格式化器格式化当前时间
+        String formattedTime = now.format(formatter);
+		
+		return formattedTime;
 	}
 
 	/*   ----- 公式用数组创建 -----
@@ -780,6 +834,8 @@ public class test0409_01 {
 		mockDataList.add(mockData13);
 		mockDataList.add(mockData14);
 		mockDataList.add(mockData15);
+		
+		mockDataList.clear();
 		
 		return mockDataList;
 	}

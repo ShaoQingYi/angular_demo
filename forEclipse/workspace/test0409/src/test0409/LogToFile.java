@@ -12,6 +12,7 @@ public class LogToFile {
     public static final Logger logger = Logger.getLogger(LogToFile.class.getName());
     
     public static void initLogger() {
+    	// TODO
     	String logPath = "C:\\\\Users\\\\INNOX-002\\\\Desktop\\\\shao\\\\forEclipse\\\\workspace\\\\log.log";
     	
     	// 配置Logger输出到指定文件

@@ -613,9 +613,7 @@ public class test0409_01 extends LogToFile{
 
 			// 重新格式化为字符串
 			previousDayString = formatter.format(calendar.getTime());
-//			System.out.println("前一天的日期是: " + previousDayString);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -632,7 +630,6 @@ public class test0409_01 extends LogToFile{
 			
 			previousDayString = formatter.format(date);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
